@@ -348,19 +348,24 @@ public class DomBoard extends EnumMap< DomCardName, ArrayList<DomCard> > {
 	}
 
 	public static ArrayList<DomCardName> getRandomBoard() {
+		return getRandomBoard(new HashSet<DomCardName>());
+	}
+	
+	public static ArrayList<DomCardName> getRandomBoard(HashSet<DomCardName> used)
+	{
 		ArrayList<DomCardName> theCardsToChooseFrom = new ArrayList<DomCardName>();
 		for (DomSet set : DomSet.values()){
 			if (set!=DomSet.Common && !isExcluded(set)){
 				for (DomCardName cardName : set.getCards()){
-					if (!isExcluded(cardName)){
+					if (!isExcluded(cardName) && !used.contains(cardName)){
 						theCardsToChooseFrom.add(cardName);
 					}
 				}
 			}
 		}
 		Collections.shuffle(theCardsToChooseFrom);
-		ArrayList<DomCardName> theChosenCards = new ArrayList<DomCardName>();
-		for (int i=0;i<11;i++){
+		ArrayList<DomCardName> theChosenCards = new ArrayList<DomCardName>(used);
+		for (int i=used.size();i<10;i++){
 			theChosenCards.add(theCardsToChooseFrom.get(i));
 		}
 		return theChosenCards;

@@ -53,6 +53,7 @@ import org.xml.sax.InputSource;
 import be.aga.dominionSimulator.DomEngine;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomBotType;
+import be.aga.dominionSimulator.enums.DomPhase;
 
 public class DomGui extends JFrame implements ActionListener {
   private DomEngine myEngine;
@@ -133,6 +134,14 @@ public class DomGui extends JFrame implements ActionListener {
        theBTN.addActionListener( this );
        return theBTN;
 	}
+	
+    private JButton getHumanPlayButton() {
+    	JButton theBTN = new JButton("Play Against Bot");
+    	theBTN.setMnemonic('H');
+    	theBTN.setActionCommand("Human game");
+    	theBTN.addActionListener(this);
+    	return theBTN;
+    }
 
     private JPanel getControlPanel() {
         final JPanel thePanel = new JPanel();
@@ -185,14 +194,19 @@ public class DomGui extends JFrame implements ActionListener {
 	    theCons.gridy++;
 	    theCons.gridwidth=2;
 	    thePanel.add(myOrderBox, theCons);
-        //more buttons to play with
+        //the sample game button
 	    theCons.gridx=0;
 	    theCons.gridy++;
 	    theCons.gridwidth=2;
 	    thePanel.add(getSampleGameButton(), theCons);
+	    //the human game button
+	    theCons.gridx=0;
+	    theCons.gridy++;
+	    theCons.gridwidth=2;
+	    thePanel.add(getHumanPlayButton(), theCons);
         //a label to indicate the 3 empty piles endings
 	    theCons.gridx=2;
-	    theCons.gridy--;
+	    theCons.gridy -= 2;
 	    theCons.gridwidth=6;
 	    my3EmptyPilesLBL.setForeground(Color.red);
 	    thePanel.add(my3EmptyPilesLBL, theCons);
@@ -323,41 +337,41 @@ public class DomGui extends JFrame implements ActionListener {
       theStartStateRBTNGroup.add(new JRadioButton("5/2 start"));
       return theStartStateRBTNGroup;
     }
-
+    
     @Override
     public void actionPerformed( ActionEvent aE ) {
-      if (aE.getActionCommand().equals( "Select" )) {
-    	myEditedSelector=(JButton) aE.getSource();
-    	new DomBotSelector(myEngine, getSelectedPlayer((JButton) aE.getSource()));
-      }
-      if (aE.getActionCommand().startsWith( "Start" )) {
-        if (!aE.getActionCommand().startsWith( "Start sample" )) 
-    	  for (JButton button : myBotSelectors)
-    		((JLabel) myWinPercentageLBLs.get(button)).setText("");
-        startSimulation( aE );
-        if (aE.getActionCommand().startsWith( "Start sample" )) {
-          showSampleGame();
-        }
-      }
-      if (aE.getActionCommand().equals( "About" )) {
-	    JOptionPane.showMessageDialog(this, getAboutPanel(), "About", JOptionPane.PLAIN_MESSAGE);
-      }
-      if (aE.getActionCommand().equals( "WebHelp" )) {
-    	  try {
-			Desktop.getDesktop().browse(new URI("http://dominionsimulator.wordpress.com"));
-		  } catch (Exception e) {
-	        JOptionPane.showMessageDialog(this, "Can not open web site!", "", JOptionPane.ERROR_MESSAGE);
-		  }
-      }
-      if (aE.getActionCommand().equals( "EditCreate" )) {
-        myEditedSelector=myEditCreateButtons.get(aE.getSource());
-        DomPlayer theStrategy;
-		if (getSelectedPlayer(myEditedSelector) == null ) {
-          theStrategy = new DomPlayer("A New Strategy");
-        } else {
-          theStrategy = getSelectedPlayer(myEditedSelector);
-        }
-        new DomBotEditor( myEngine, theStrategy);
+    	if (aE.getActionCommand().equals( "Select" )) {
+    		myEditedSelector=(JButton) aE.getSource();
+    		new DomBotSelector(myEngine, getSelectedPlayer((JButton) aE.getSource()));
+    	}
+    	if (aE.getActionCommand().startsWith( "Start" )) {
+    		if (!aE.getActionCommand().startsWith( "Start sample" )) 
+    			for (JButton button : myBotSelectors)
+    				((JLabel) myWinPercentageLBLs.get(button)).setText("");
+    		startSimulation( aE );
+    		if (aE.getActionCommand().startsWith( "Start sample" )) {
+    			showSampleGame();
+    		}
+    	}
+    	if (aE.getActionCommand().equals( "About" )) {
+    		JOptionPane.showMessageDialog(this, getAboutPanel(), "About", JOptionPane.PLAIN_MESSAGE);
+    	}
+    	if (aE.getActionCommand().equals( "WebHelp" )) {
+    		try {
+    			Desktop.getDesktop().browse(new URI("http://dominionsimulator.wordpress.com"));
+    		} catch (Exception e) {
+    			JOptionPane.showMessageDialog(this, "Can not open web site!", "", JOptionPane.ERROR_MESSAGE);
+    		}
+    	}
+    	if (aE.getActionCommand().equals( "EditCreate" )) {
+    		myEditedSelector=myEditCreateButtons.get(aE.getSource());
+    		DomPlayer theStrategy;
+    		if (getSelectedPlayer(myEditedSelector) == null ) {
+    			theStrategy = new DomPlayer("A New Strategy");
+    		} else {
+    			theStrategy = getSelectedPlayer(myEditedSelector);
+    		}
+    		new DomBotEditor( myEngine, theStrategy);
       }
       if (aE.getActionCommand().equals( "CopyPaste" )) {
         myEditedSelector=myCopyPasteButtons.get(aE.getSource());
@@ -386,6 +400,9 @@ public class DomGui extends JFrame implements ActionListener {
           DomPlayer theSelectedBot = getSelectedPlayer(myEditedSelector);
           refreshBotSelectors(colonize(theSelectedBot));
       }
+      if (aE.getActionCommand().startsWith("Human")) {
+    	  startSimulation(aE);
+      }
     }
 
 	 private DomPlayer getSelectedPlayer(JButton theSelector) {
@@ -399,6 +416,17 @@ public class DomGui extends JFrame implements ActionListener {
 		return null;
 	}
 
+	 public ArrayList<DomPlayer> getAllSelectedPlayers() {
+		 ArrayList<DomPlayer> bots = new ArrayList<DomPlayer>();
+		 for (JButton selected : myBotSelectors)
+		 {
+			 DomPlayer player = getSelectedPlayer(selected);
+			 if (player != null)
+				 bots.add(player);
+		 }
+		 return bots;
+	 }
+	 
 	 // If a string is on the system clip board, this method returns it;
 	 // otherwise it returns null.
 	 public String getClipboard() {
@@ -497,6 +525,16 @@ public class DomGui extends JFrame implements ActionListener {
             if (aE.getActionCommand().startsWith( "Start sample" )){
               theNumber=1;
               showLog=true;
+            }
+            if (aE.getActionCommand().startsWith("Human")) {
+            	theNumber = 1;
+            	showLog = true;
+            	System.out.println("Adding Human");
+            	DomPlayer human = new DomPlayer("BOB", true);
+            	thePlayers.add(human);
+            	DomGameFrame gui = new DomGameFrame(myEngine, human);
+            	myEngine.setGameFrame(gui);
+            	human.setInterface(gui);
             }
             setCursor( new Cursor( Cursor.WAIT_CURSOR ) );
             myEngine.startSimulation(thePlayers, myOrderBox.isSelected(), theNumber, showLog);

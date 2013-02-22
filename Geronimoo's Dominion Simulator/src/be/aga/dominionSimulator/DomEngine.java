@@ -1,6 +1,6 @@
 package be.aga.dominionSimulator;
 
-import java.awt.Component;
+import java.awt.Component; 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,6 +11,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -209,7 +210,7 @@ public class DomEngine {
      * @param aShowLog 
      */
     public void startSimulation( ArrayList<DomPlayer> thePlayers, boolean keepOrder, int aNumber, boolean aShowLog ) {
-        emptyPilesEndingCount=0;
+    	emptyPilesEndingCount=0;
         NUMBER_OF_GAMES = aNumber;
         myLog="<BR><HR><B>Game Log</B><BR>";
         long theStartTime = System.currentTimeMillis();
@@ -426,35 +427,22 @@ public class DomEngine {
 
 	public ArrayList<DomCardName> getBoardCards() {
 		ArrayList<DomCardName> theCards = new ArrayList<DomCardName>();
-		theCards.addAll(DomSet.Common.getCards());
-		theCards.addAll(DomBoard.getRandomBoard());
-		return theCards;
-	}
-
-	public ArrayList<DomCard> getHumanPlayerHand() {
-		ArrayList<DomCard> theCards = new ArrayList<DomCard>();
-		int i = 0;
-		for (DomCardName cardName : DomBoard.getRandomBoard()) {
-			theCards.add(cardName.createNewCardInstance());
+		HashSet<DomCardName> allBotCards = new HashSet<DomCardName>();
+		for (DomPlayer bot : myGui.getAllSelectedPlayers()) {
+			ArrayList<DomCardName> botCards = bot.getCardsNeededInSupply();
+			for (DomCardName name : botCards)
+			{
+				// Use HashSet then turn into an ArrayList
+				if (name.hasCardType(DomCardType.Kingdom) && !allBotCards.contains(name))
+					allBotCards.add(name);
+			}
 		}
-//		for (DomCardName cardName : DomBoard.getRandomBoard()) {
-//			theCards.add(cardName.createNewCardInstance());
-//		}
-//		for (DomCardName cardName : DomBoard.getRandomBoard()) {
-//			theCards.add(cardName.createNewCardInstance());
-//		}
-//		for (DomCardName cardName : DomBoard.getRandomBoard()) {
-//			theCards.add(cardName.createNewCardInstance());
-//		}
-//		for (DomCardName cardName : DomBoard.getRandomBoard()) {
-//			theCards.add(cardName.createNewCardInstance());
-//		}
-//		for (DomCardName cardName : DomBoard.getRandomBoard()) {
-//			theCards.add(cardName.createNewCardInstance());
-//		}
+		theCards.addAll(DomSet.Common.getCards());
+		theCards.addAll(DomBoard.getRandomBoard(allBotCards));
 		return theCards;
 	}
 
+	
 	public ArrayList<DomCard> getCardsInPlay() {
 		ArrayList<DomCard> theCards = new ArrayList<DomCard>();
 		theCards.add(DomCardName.Woodcutter.createNewCardInstance());

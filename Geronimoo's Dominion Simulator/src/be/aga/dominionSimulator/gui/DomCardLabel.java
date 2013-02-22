@@ -9,7 +9,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
+import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
+import be.aga.dominionSimulator.enums.DomPhase;
 
 public class DomCardLabel extends JLabel implements MouseListener {
 	private static final double STANDARD_FIT = 0.9;
@@ -18,11 +20,13 @@ public class DomCardLabel extends JLabel implements MouseListener {
 	private Object myParentSize;
 	private DomGameFrame myGameFrame;
 	private DomCardName myCardName;
+	private DomPlayer owner;
 	
 	public DomCardLabel(DomCardName aCardName, DomGameFrame aGameFrame) {
 		addMouseListener(this);
 		myCardName = aCardName;
 		myGameFrame = aGameFrame;
+		owner = myGameFrame.getPlayer();
 		setText("<html>"+aCardName.toHTML()+"</html>");
 //		URL url = aCardName.getImageURL();
 //		if (url!=null) {
@@ -88,7 +92,13 @@ public class DomCardLabel extends JLabel implements MouseListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
+		// TODO
+		myGameFrame.setSelection(this);
+		if ((owner.getPhase() != null) && (owner.getPhase().equals(DomPhase.Action)))
+		{
+			System.out.println(myCardName);
+		}
+		System.out.println(myGameFrame.getSelection());
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -15,28 +16,37 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 
+import com.sun.org.apache.xerces.internal.impl.RevalidationHandler;
+
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomEngine;
+import be.aga.dominionSimulator.DomGame;
+import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomSet;
 
 public class DomGameFrame extends JFrame implements ActionListener {
 	private DomEngine myEngine;
+	private DomPlayer thePlayer;
 	private JLabel myDollarLabel;
 	private JLabel myActionsLabel;
 	private JLabel myTurnLabel;
 	private JLabel myBuysLabel;
 	private HashMap<JLabel, DomCardName> myBoardCards = new HashMap<JLabel, DomCardName>();
+	private HashMap<DomCardName, Integer> supplyValues = new HashMap<DomCardName, Integer>();
 	private JTextArea myLogArea;
 	private JPanel myInPlayPanel;
 	private DomCardPanel myHandPanel;
 	private JPanel myKingdomPanel;
 	private JPanel myCommonPanel;
 	private DomCardLabel myBigImage;
+	private JLabel selection;
+	private final JLabel PASS = new JLabel(); // Other methods set selection to PASS when appropriate
 	
 	private final int SPLIT_DIVIDER_SIZE = 5;
 	private JButton myAddTreasureBTN;
@@ -45,9 +55,10 @@ public class DomGameFrame extends JFrame implements ActionListener {
 	private JButton myLogBTN;
 	private JButton myEndTurnBTN;
 
-public DomGameFrame(DomEngine anEngine) {
+public DomGameFrame(DomEngine anEngine, DomPlayer theHuman) {
 	 myEngine=anEngine;
 	 myEngine.setGameFrame(this);
+	 thePlayer = theHuman;
 	 buildGUI();
 	 setTitle("Play Dominion");
 //     setPreferredSize(RefineryUtilities.getMaximumWindowBounds().getSize());
@@ -143,7 +154,7 @@ private DomCardLabel getBigImage() {
 //}
 
 private JSplitPane getBoardSplit() {
-    JSplitPane theSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, getCommonPanel(), getKingdomPanel());
+    JSplitPane theSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, new JScrollPane(getCommonPanel()), new JScrollPane(getKingdomPanel()));
 	theSplit.setBorder(new TitledBorder("Board"));
     theSplit.setResizeWeight(0.3);
     theSplit.setDividerSize(SPLIT_DIVIDER_SIZE);
@@ -157,7 +168,9 @@ private JPanel getKingdomPanel() {
 	myKingdomPanel.setMinimumSize(new Dimension(100,100));
 	for (DomCardName cardName : myEngine.getBoardCards()) {
 		if (cardName.getSet()!=DomSet.Common){
-		    myKingdomPanel.add(getCardLabel(cardName), theCons);
+			JLabel label = getCardLabel(cardName);
+			label.addMouseListener(new SupplyCardListener(cardName, thePlayer));
+		    myKingdomPanel.add(label, theCons);
 			theCons.gridx++;
 		}
 	}
@@ -171,7 +184,9 @@ private JPanel getCommonPanel() {
 	myCommonPanel.setMinimumSize(new Dimension(100,100));
 	for (DomCardName cardName : myEngine.getBoardCards()) {
 		if (cardName.getSet()==DomSet.Common){
-		    myCommonPanel.add(getCardLabel(cardName), theCons);
+			JLabel label = getCardLabel(cardName);
+			label.addMouseListener(new SupplyCardListener(cardName, thePlayer));
+		    myCommonPanel.add(label, theCons);
 			theCons.gridx++;
 		}
 	}
@@ -221,7 +236,7 @@ private Component getHandAndButtonsSplit() {
 
 private JComponent getHandPanel() {
 	myHandPanel = new DomCardPanel("In Hand", this);
-	myHandPanel.setCards(myEngine.getHumanPlayerHand());
+	myHandPanel.setCards(thePlayer.getCardsInHand());
 	return myHandPanel;
 }
 
@@ -304,9 +319,29 @@ public void actionPerformed(ActionEvent e) {
 	}
 	if (e.getActionCommand().equals("Delete")){
 	}
+	if (e.getActionCommand().equals("AddTreasures")) {
+		thePlayer.playAllTreasures();
+		updateHand();
+	}
 }
 
 public void setBigImage(DomCardName myCardName) {
-   myBigImage.setCardName(myCardName); 	
+	myBigImage.setCardName(myCardName); 	
+}
+
+public DomPlayer getPlayer() {
+	return thePlayer;
+}
+
+public JLabel getSelection() {
+	return selection;
+}
+
+public void setSelection(JLabel label) {
+	selection = label;
+}
+
+public void updateHand() {
+	myHandPanel.setCards(thePlayer.getCardsInHand());
 }
 }

@@ -1,6 +1,6 @@
 package be.aga.dominionSimulator;
 
-import java.util.Comparator;
+import java.util.Comparator; 
 
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;

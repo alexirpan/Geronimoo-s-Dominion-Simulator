@@ -729,7 +729,6 @@ public enum DomCardName  {
         }
         return theCoins<0 ? 0 : theCoins;
     }
-
     /**
      * @param aDomPlayer
      * @return

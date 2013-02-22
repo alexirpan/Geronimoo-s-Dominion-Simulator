@@ -61,6 +61,7 @@ public class DomCardPanel extends JPanel {
 //				theCons.gridx++;
 //			}
 //		}
+		this.removeAll();
 		if (aCards.size()>FIRST_TRESHOLD){
 			int i=0;
 			GridBagConstraints theCons = DomGui.getGridBagConstraints(2);
@@ -80,5 +81,6 @@ public class DomCardPanel extends JPanel {
 	  	      theCons.gridx++;
 			}
 		}
+		this.revalidate();
 	}
 }
