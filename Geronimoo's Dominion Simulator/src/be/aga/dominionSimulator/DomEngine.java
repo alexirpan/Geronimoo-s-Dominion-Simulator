@@ -12,6 +12,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -63,6 +64,7 @@ public class DomEngine {
 	private int emptyPilesEndingCount=0;
 	private StatusBar myStatusBar;
 	private DomGameFrame myGameFrame;
+	private Set<DomCardName> cardNames;
     
     public DomEngine () {
       loadSystemBots();
@@ -256,6 +258,22 @@ public class DomEngine {
         if (!haveToLog) 
           showCharts();
     }
+    
+    public void startHumanGame(ArrayList<DomPlayer> thePlayers, boolean keepOrder, DomGameFrame gui) {
+    	emptyPilesEndingCount=0;
+    	myLog="<BR><HR><B>Game Log</B><BR>";
+    	players.clear();
+    	players.addAll(thePlayers);
+    	DomBoard theBoard = null;
+    	if (!keepOrder) {
+    		Collections.shuffle(players);
+    	}
+    	haveToLog = true;
+    	DomGame theGame = new DomGame(theBoard, players, null );
+    	cardNames = theGame.board.keySet();
+    	gui.setGame(theGame);
+    	gui.initialize();
+    }
 
 	private void writeEndOfGameLog(DomGame theGame) {
       DomEngine.addToLog("</i>");
@@ -425,22 +443,7 @@ public class DomEngine {
 		return false;
 	}
 
-	public ArrayList<DomCardName> getBoardCards() {
-		ArrayList<DomCardName> theCards = new ArrayList<DomCardName>();
-		HashSet<DomCardName> allBotCards = new HashSet<DomCardName>();
-		for (DomPlayer bot : myGui.getAllSelectedPlayers()) {
-			ArrayList<DomCardName> botCards = bot.getCardsNeededInSupply();
-			for (DomCardName name : botCards)
-			{
-				// Use HashSet then turn into an ArrayList
-				if (name.hasCardType(DomCardType.Kingdom) && !allBotCards.contains(name))
-					allBotCards.add(name);
-			}
-		}
-		theCards.addAll(DomSet.Common.getCards());
-		theCards.addAll(DomBoard.getRandomBoard(allBotCards));
-		return theCards;
-	}
+
 
 	
 	public ArrayList<DomCard> getCardsInPlay() {
@@ -468,5 +471,9 @@ public class DomEngine {
 	public void setSelectedBoard(Object[] selectedValues) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public Set<DomCardName> getCardsUsed() {
+		return cardNames;
 	}
 }

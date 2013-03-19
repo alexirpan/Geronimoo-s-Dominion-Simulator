@@ -3,46 +3,44 @@ package be.aga.dominionSimulator.gui;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomCost;
 import be.aga.dominionSimulator.DomEngine;
 import be.aga.dominionSimulator.DomGame;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
+import be.aga.dominionSimulator.enums.DomCardType;
 import be.aga.dominionSimulator.enums.DomPhase;
 
-public class SupplyCardListener implements MouseListener {
+public class HandCardListener implements MouseListener {
 
-	private DomCardName name;
-	private DomPlayer buyer;
-	private DomGame game;
+	private DomCard card;
+	private DomPlayer owner;
 	private DomGameFrame gui;
 	
-	public SupplyCardListener(DomCardName cardName, DomGameFrame gui)
+	public HandCardListener(DomCard card, DomGameFrame gui)
 	{
-		name = cardName;
+		this.card = card;
 		this.gui = gui;
-		buyer = gui.getPlayer();
-		game = buyer.getCurrentGame();
+		owner = gui.getPlayer();
 	}
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		//System.out.println("Clicked on " + name);
-		if ((buyer.getPhase() == DomPhase.Buy) && (buyer.getBuysLeft() > 0))
-		{
-			DomCost cost = name.getCost(game);
-			if (buyer.getTotalAvailableCurrency().compareTo(cost) >= 0)
-			{
-				//System.out.println("Tried to buy " + name);
-				boolean b = buyer.tryToBuy(name);
-				if (b) {
-					buyer.setBuysLeft(buyer.getBuysLeft() - 1);
-				}
+		if (card.hasCardType(DomCardType.Action)) {
+			if (owner.getPhase().equals(DomPhase.Action) && (owner.getActionsLeft() > 0)) {
+				owner.play(owner.removeCardFromHand(card));
+				owner.actionsLeft--;
+			}
+		} else if (card.hasCardType(DomCardType.Treasure)) {
+			// TODO Auto change to buy phase
+			if (owner.getPhase().equals(DomPhase.Buy)) {
+				owner.play(owner.removeCardFromHand(card));
 			}
 		}
 		gui.updateGraphics();
 	}
+		
 
 	@Override
 	public void mouseEntered(MouseEvent e) {

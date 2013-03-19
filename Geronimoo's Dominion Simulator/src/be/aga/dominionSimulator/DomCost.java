@@ -78,4 +78,9 @@ public class DomCost implements Comparable< DomCost >{
 //	    	  theNewCost=ZERO;
 	      return theNewCost; 
 	} 
+	
+	@Override
+	public String toString() {
+		return String.format("%d coins %d potions", coins, potions);
+	}
 }

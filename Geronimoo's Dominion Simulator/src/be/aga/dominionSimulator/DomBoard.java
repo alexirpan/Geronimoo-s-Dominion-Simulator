@@ -79,11 +79,9 @@ public class DomBoard extends EnumMap< DomCardName, ArrayList<DomCard> > {
 	}
 
     private void addCustomKingdoms() {
-        for (DomPlayer thePlayer : players) {
-          for (DomCardName theCard : thePlayer.getCardsNeededInSupply()){
+      for (DomCardName theCard : makeRandomBoard()){
             addCardPile( theCard );
-          }
-        }
+       }
     }
 
     public void addCardPile( DomCardName aCardName ) {
@@ -347,25 +345,32 @@ public class DomBoard extends EnumMap< DomCardName, ArrayList<DomCard> > {
 		return gainsNeededToEndGame;
 	}
 
-	public static ArrayList<DomCardName> getRandomBoard() {
-		return getRandomBoard(new HashSet<DomCardName>());
-	}
-	
-	public static ArrayList<DomCardName> getRandomBoard(HashSet<DomCardName> used)
+	public ArrayList<DomCardName> makeRandomBoard()
 	{
+		HashSet<DomCardName> allBotCards = new HashSet<DomCardName>();
+		for (DomPlayer bot : players) {
+			ArrayList<DomCardName> botCards = bot.getCardsNeededInSupply();
+			for (DomCardName name : botCards)
+			{
+				if (name.hasCardType(DomCardType.Kingdom))
+					allBotCards.add(name);
+			}
+		}
+		
 		ArrayList<DomCardName> theCardsToChooseFrom = new ArrayList<DomCardName>();
 		for (DomSet set : DomSet.values()){
 			if (set!=DomSet.Common && !isExcluded(set)){
 				for (DomCardName cardName : set.getCards()){
-					if (!isExcluded(cardName) && !used.contains(cardName)){
+					if (!isExcluded(cardName) && !allBotCards.contains(cardName)){
 						theCardsToChooseFrom.add(cardName);
 					}
 				}
 			}
 		}
+		
 		Collections.shuffle(theCardsToChooseFrom);
-		ArrayList<DomCardName> theChosenCards = new ArrayList<DomCardName>(used);
-		for (int i=used.size();i<10;i++){
+		ArrayList<DomCardName> theChosenCards = new ArrayList<DomCardName>(allBotCards);
+		for (int i=theChosenCards.size();i<10;i++){
 			theChosenCards.add(theCardsToChooseFrom.get(i));
 		}
 		return theChosenCards;

@@ -13,20 +13,17 @@ import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomPhase;
 
-public class DomCardLabel extends JLabel implements MouseListener {
+public class DomCardLabel extends JLabel {
 	private static final double STANDARD_FIT = 0.9;
 	private ImageIcon myOriginalIcon;
 	private ImageIcon myScaledIcon;
 	private Object myParentSize;
 	private DomGameFrame myGameFrame;
 	private DomCardName myCardName;
-	private DomPlayer owner;
 	
 	public DomCardLabel(DomCardName aCardName, DomGameFrame aGameFrame) {
-		addMouseListener(this);
 		myCardName = aCardName;
 		myGameFrame = aGameFrame;
-		owner = myGameFrame.getPlayer();
 		setText("<html>"+aCardName.toHTML()+"</html>");
 //		URL url = aCardName.getImageURL();
 //		if (url!=null) {
@@ -41,12 +38,6 @@ public class DomCardLabel extends JLabel implements MouseListener {
         setHorizontalTextPosition(SwingConstants.CENTER);
 	}
 	
-	public DomCardLabel(DomCardName name, DomGameFrame aGameFrame, boolean b) {
-		this(name, aGameFrame);
-	    myOriginalIcon=null;
-	    setIcon(null);
-	}
-
 	public DomCardLabel() {
 		super();
 	}
@@ -82,29 +73,4 @@ public class DomCardLabel extends JLabel implements MouseListener {
 	   myOriginalIcon=new ImageIcon(aCardName.getCompleteImageLocation());
 	   setIcon(myOriginalIcon);
 	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		if (e.getID()==MouseEvent.MOUSE_ENTERED){
-		  getGameFrame().setBigImage(myCardName);
-		}
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		// TODO
-		myGameFrame.setSelection(this);
-		if ((owner.getPhase() != null) && (owner.getPhase().equals(DomPhase.Action)))
-		{
-			System.out.println(myCardName);
-		}
-		System.out.println(myGameFrame.getSelection());
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {}
-	@Override
-	public void mousePressed(MouseEvent e) {}
-	@Override
-	public void mouseReleased(MouseEvent e) {}
 }

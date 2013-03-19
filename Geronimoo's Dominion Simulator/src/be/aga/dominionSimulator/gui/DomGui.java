@@ -51,6 +51,7 @@ import org.jfree.ui.RefineryUtilities;
 import org.xml.sax.InputSource;
 
 import be.aga.dominionSimulator.DomEngine;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomBotType;
 import be.aga.dominionSimulator.enums.DomPhase;
@@ -530,11 +531,13 @@ public class DomGui extends JFrame implements ActionListener {
             	theNumber = 1;
             	showLog = true;
             	System.out.println("Adding Human");
-            	DomPlayer human = new DomPlayer("BOB", true);
+            	DomHumanPlayer human = new DomHumanPlayer("BOB");
             	thePlayers.add(human);
             	DomGameFrame gui = new DomGameFrame(myEngine, human);
             	myEngine.setGameFrame(gui);
             	human.setInterface(gui);
+            	myEngine.startHumanGame(thePlayers, myOrderBox.isSelected(), gui);
+            	return;
             }
             setCursor( new Cursor( Cursor.WAIT_CURSOR ) );
             myEngine.startSimulation(thePlayers, myOrderBox.isSelected(), theNumber, showLog);

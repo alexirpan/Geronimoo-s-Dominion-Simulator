@@ -13,6 +13,7 @@ import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,27 +27,30 @@ import com.sun.org.apache.xerces.internal.impl.RevalidationHandler;
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomEngine;
 import be.aga.dominionSimulator.DomGame;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
+import be.aga.dominionSimulator.enums.DomPhase;
 import be.aga.dominionSimulator.enums.DomSet;
 
 public class DomGameFrame extends JFrame implements ActionListener {
 	private DomEngine myEngine;
-	private DomPlayer thePlayer;
+	private DomHumanPlayer thePlayer;
 	private JLabel myDollarLabel;
 	private JLabel myActionsLabel;
 	private JLabel myTurnLabel;
 	private JLabel myBuysLabel;
 	private HashMap<JLabel, DomCardName> myBoardCards = new HashMap<JLabel, DomCardName>();
 	private HashMap<DomCardName, Integer> supplyValues = new HashMap<DomCardName, Integer>();
-	private JTextArea myLogArea;
+	private JEditorPane myLogArea;
 	private JPanel myInPlayPanel;
-	private DomCardPanel myHandPanel;
+	private DomHandPanel myHandPanel;
 	private JPanel myKingdomPanel;
 	private JPanel myCommonPanel;
 	private DomCardLabel myBigImage;
 	private JLabel selection;
 	private final JLabel PASS = new JLabel(); // Other methods set selection to PASS when appropriate
+	private DomGame myGame = null;
 	
 	private final int SPLIT_DIVIDER_SIZE = 5;
 	private JButton myAddTreasureBTN;
@@ -55,14 +59,21 @@ public class DomGameFrame extends JFrame implements ActionListener {
 	private JButton myLogBTN;
 	private JButton myEndTurnBTN;
 
-public DomGameFrame(DomEngine anEngine, DomPlayer theHuman) {
+public DomGameFrame(DomEngine anEngine, DomHumanPlayer theHuman) {
 	 myEngine=anEngine;
 	 myEngine.setGameFrame(this);
 	 thePlayer = theHuman;
+}
+
+public void initialize() {
+	 thePlayer.setPhase(DomPhase.Action);
+	 myLogArea = new JEditorPane();
+	 myLogArea.setEditable(false);
+	 myLogArea.setContentType("text/html");
 	 buildGUI();
 	 setTitle("Play Dominion");
-//     setPreferredSize(RefineryUtilities.getMaximumWindowBounds().getSize());
-     setPreferredSize(new Dimension(800,600));
+//    setPreferredSize(RefineryUtilities.getMaximumWindowBounds().getSize());
+	 setPreferredSize(new Dimension(800,600));
 	 pack();
 	 setVisible(true);
 }
@@ -87,11 +98,17 @@ private JSplitPane getBottomSplit() {
 }
 
 private JSplitPane getInfoSplit() {
-    JSplitPane theSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, getInfoPanel(), getBigCardImagePanel());
+    JSplitPane theSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, getInfoPanel(), new JScrollPane(getLogPanel()));
     theSplit.setResizeWeight(0);
     theSplit.setDividerSize(SPLIT_DIVIDER_SIZE);
     theSplit.resetToPreferredSizes();
 	return theSplit;
+}
+
+private JPanel getLogPanel() {
+	JPanel thePanel = new JPanel();
+	thePanel.add(myLogArea);
+	return thePanel;
 }
 
 private JPanel getInfoPanel() {
@@ -102,12 +119,8 @@ private JPanel getInfoPanel() {
 	//turn indicator
 //	myTurnLabel = new JLabel("Your turn");
 //	thePanel.add(myTurnLabel, theCons);
-	//$ indicator
-//	myDollarLabel = new JLabel("Money: $5 + P");
-////	theCons.gridy++;
-//	thePanel.add(myDollarLabel, theCons);
 	//Actions indicator
-	myActionsLabel = new JLabel("Actions: 3");
+	myActionsLabel = new JLabel("Actions: 1");
 //	theCons.gridx++;
 	thePanel.add(myActionsLabel, theCons);
 	//Info button
@@ -117,11 +130,14 @@ private JPanel getInfoPanel() {
 	theCons.gridx++;
 	thePanel.add(theBTN, theCons);
 	//Buys indicator
-	myBuysLabel = new JLabel("Buys: 1 ($5 +P)");
+	myBuysLabel = new JLabel("Buys: 1");
 	theCons.gridx=0;
 	theCons.gridy++;
 	thePanel.add(myBuysLabel, theCons);
-	
+	//$ indicator
+	myDollarLabel = new JLabel("Money: $0");
+	theCons.gridy++;
+	thePanel.add(myDollarLabel, theCons);
 	return thePanel;
 }
 
@@ -166,10 +182,10 @@ private JPanel getKingdomPanel() {
 	myKingdomPanel.setLayout(new GridBagLayout());
 	GridBagConstraints theCons = DomGui.getGridBagConstraints(2);
 	myKingdomPanel.setMinimumSize(new Dimension(100,100));
-	for (DomCardName cardName : myEngine.getBoardCards()) {
+	for (DomCardName cardName : myEngine.getCardsUsed()) {
 		if (cardName.getSet()!=DomSet.Common){
 			JLabel label = getCardLabel(cardName);
-			label.addMouseListener(new SupplyCardListener(cardName, thePlayer));
+			label.addMouseListener(new SupplyCardListener(cardName, this));
 		    myKingdomPanel.add(label, theCons);
 			theCons.gridx++;
 		}
@@ -182,10 +198,10 @@ private JPanel getCommonPanel() {
 	myCommonPanel.setLayout(new GridBagLayout());
 	GridBagConstraints theCons = DomGui.getGridBagConstraints(2);
 	myCommonPanel.setMinimumSize(new Dimension(100,100));
-	for (DomCardName cardName : myEngine.getBoardCards()) {
+	for (DomCardName cardName : myEngine.getCardsUsed()) {
 		if (cardName.getSet()==DomSet.Common){
 			JLabel label = getCardLabel(cardName);
-			label.addMouseListener(new SupplyCardListener(cardName, thePlayer));
+			label.addMouseListener(new SupplyCardListener(cardName, this));
 		    myCommonPanel.add(label, theCons);
 			theCons.gridx++;
 		}
@@ -219,7 +235,7 @@ private Component getInPlayPanel() {
 	myInPlayPanel.setLayout(new GridBagLayout());
 	myInPlayPanel.setBorder(new TitledBorder("In Play"));
 	GridBagConstraints theCons = DomGui.getGridBagConstraints(2);
-	for (DomCard card : myEngine.getCardsInPlay()) {
+	for (DomCard card : thePlayer.getCardsInPlay()) {
 	    myInPlayPanel.add(getCardLabel(card.getName()), theCons);
 		theCons.gridx++;
 	}
@@ -235,7 +251,7 @@ private Component getHandAndButtonsSplit() {
 }
 
 private JComponent getHandPanel() {
-	myHandPanel = new DomCardPanel("In Hand", this);
+	myHandPanel = new DomHandPanel("In Hand", this);
 	myHandPanel.setCards(thePlayer.getCardsInHand());
 	return myHandPanel;
 }
@@ -313,15 +329,34 @@ public void actionPerformed(ActionEvent e) {
 	if (e.getActionCommand().equals("Cancel")){
 		dispose();
 	}
-	if (e.getActionCommand().equals("OK")){
+	else if (e.getActionCommand().equals("OK")){
 	}
-	if (e.getActionCommand().equals("Clear")){
+	else if (e.getActionCommand().equals("Clear")){
 	}
-	if (e.getActionCommand().equals("Delete")){
+	else if (e.getActionCommand().equals("Delete")){
 	}
-	if (e.getActionCommand().equals("AddTreasures")) {
-		thePlayer.playAllTreasures();
-		updateHand();
+	else if (e.getActionCommand().equals("Log")) {
+		
+	}
+	else if (e.getActionCommand().equals("BuyPhase")) {
+		thePlayer.setPhase(DomPhase.Buy);
+	}
+	else if (e.getActionCommand().equals("AddTreasures")) {
+		thePlayer.setPhase(DomPhase.Buy);
+		thePlayer.playTreasures();
+		updateGraphics();
+	}
+	else if (e.getActionCommand().equals("EndTurn")) {
+		thePlayer.doCleanupPhase();
+		myGame.cycleActivePlayer();
+		while (myGame.getActivePlayer() != thePlayer) {
+			myGame.getActivePlayer().takeTurn();
+			myGame.cycleActivePlayer();
+		}
+		thePlayer.startActionPhase();
+		thePlayer.setPhase(DomPhase.Action);
+		// Start this turn
+		updateGraphics();
 	}
 }
 
@@ -341,7 +376,50 @@ public void setSelection(JLabel label) {
 	selection = label;
 }
 
+public void updateGraphics() {
+	updateHand();
+	updateInPlay();
+	updateTreasureButton();
+	updateLabels();
+	myLogArea.setText(DomEngine.myLog);
+	myLogArea.repaint();
+}
+
 public void updateHand() {
 	myHandPanel.setCards(thePlayer.getCardsInHand());
+}
+
+public void updateInPlay() {
+	myInPlayPanel.removeAll();
+	GridBagConstraints theCons = DomGui.getGridBagConstraints(2);
+	for (DomCard card : thePlayer.getCardsInPlay()) {
+	    myInPlayPanel.add(getCardLabel(card.getName()), theCons);
+		theCons.gridx++;
+	}
+	myInPlayPanel.repaint();
+	myInPlayPanel.revalidate();
+}
+
+public void updateTreasureButton() {
+	myAddTreasureBTN.setText("+$" + thePlayer.getMoneyInHand());
+	myAddTreasureBTN.repaint();
+}
+
+public void updateLabels() {
+	myActionsLabel.setText("Actions: " + thePlayer.getActionsLeft());
+	myActionsLabel.repaint();
+	myBuysLabel.setText("Buys: " + thePlayer.getBuysLeft());
+	myBuysLabel.repaint();
+	String money = Integer.toString(thePlayer.availableCoins);
+	for (int i = 0; i < thePlayer.availablePotions; i++) {
+		money += "P";
+	}
+	myDollarLabel.setText("Money: $" + money);
+	myDollarLabel.repaint();
+}
+
+
+public void setGame(DomGame game) {
+	myGame = game;
 }
 }

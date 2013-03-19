@@ -1,6 +1,6 @@
 package be.aga.dominionSimulator;
 
-import java.util.ArrayList;
+import java.util.ArrayList; 
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -56,7 +56,7 @@ public class DomPlayer implements Comparable< DomPlayer >{
    private int ties=0;
    private ArrayList< Integer > moneyCurve = new ArrayList< Integer >();
    private ArrayList< Integer > VPcurve= new ArrayList< Integer >();
-   private int turns=0;
+   protected int turns=0;
    private int victoryTokens=0;
    private int pointsBeforeBuys =0;
    private int sumTurns=0;
@@ -70,7 +70,7 @@ public class DomPlayer implements Comparable< DomPlayer >{
    private int coppersmithCount=0;
    private ArrayList< DomCard > boughtCards=new ArrayList< DomCard >();
    private int actionsplayed;
-   private ArrayList<DomCardName> forbiddenCardsToBuy=new ArrayList<DomCardName>();
+   ArrayList<DomCardName> forbiddenCardsToBuy=new ArrayList<DomCardName>();
    private boolean extraOutpostTurn;
    private ArrayList<DomPlayer> possessionTurns=new ArrayList<DomPlayer>();
    DomPlayer possessor;
@@ -87,17 +87,10 @@ public class DomPlayer implements Comparable< DomPlayer >{
    private StartState myStartState=null;
    private ArrayList<DomCardName> mySuggestedBoardCards= new ArrayList<DomCardName>();
    private DomCardName myBaneCard;
-   private boolean isPerson = false;
-   private DomGameFrame playerInterface;
 
 public DomPlayer ( String aString ) {
   name = aString;
   types.add(DomBotType.Bot);
-}
-
-public DomPlayer(String aName, boolean isHuman) {
-	this(aName);
-	isPerson = isHuman;
 }
 
 public DomPlayer(String aName, String anAuthor, String aDescription) {
@@ -108,31 +101,20 @@ public DomPlayer(String aName, String anAuthor, String aDescription) {
 		description=aDescription;
 }
 
-public void setInterface(DomGameFrame gui) {
-	playerInterface = gui;
-}
-
 public void makeBuyDecision() {
-	if (isPerson)
-	{
-		//TODO add stuff here
-	}
-	else
-	{
-		for (DomBuyRule theBuyRule : getBuyRules()) {
-			if (theBuyRule.getCardToBuy().hasCardType(DomCardType.Prize))
-				continue;
-			if ( getTotalAvailableCurrency().compareTo( theBuyRule.getCardToBuy().getCost(getCurrentGame()) )<0) 
-				continue;
-			if (checkBuyConditions(theBuyRule) && tryToBuy(theBuyRule.getCardToBuy()))
-				return;
-		}
+
+	for (DomBuyRule theBuyRule : getBuyRules()) {
+		if (theBuyRule.getCardToBuy().hasCardType(DomCardType.Prize))
+			continue;
+		if ( getTotalAvailableCurrency().compareTo( theBuyRule.getCardToBuy().getCost(getCurrentGame()) )<0) 
+			continue;
+		if (checkBuyConditions(theBuyRule) && tryToBuy(theBuyRule.getCardToBuy()))
+			return;
 	}
 	if (DomEngine.haveToLog) DomEngine.addToLog( name + " buys NOTHING!" );
 	//a bit dirty setting buysLeft to 0 to make him stop trying to buy stuff and say 'buys nothing'
 	//TODO maybe clean this up, check if needed if human
-	if (!isPerson)
-		buysLeft=0;
+	buysLeft=0;
 }
 
 private boolean checkBuyConditions(DomBuyRule theBuyRule) {
@@ -185,8 +167,6 @@ public int getMoneyInHand( ) {
       cardsInHand.addAll( theDrawnCards );
       if (DomEngine.haveToLog) DomEngine.addToLog(this + " draws " + theDrawnCards.size() + " cards");
       showHand();
-      if (isPerson)
-    	  playerInterface.updateHand();
     }
 
     /**
@@ -235,16 +215,12 @@ public int getMoneyInHand( ) {
     }
 
     public void takeTurn() {
-    	if (isPerson) {
-    		System.out.println("Player taking turn " + (turns + 1));	
-    		
-    	}
         doActionPhase();
         doBuyPhase();
         doCleanUpPhase();
     }
 
-	private void doCleanUpPhase() {
+	protected void doCleanUpPhase() {
 		setPhase(DomPhase.CleanUp);
 		cardsToStayInPlay.clear();
         handleHerbalists();
@@ -281,7 +257,7 @@ public int getMoneyInHand( ) {
         pointsBeforeBuys = countVictoryPoints();
 	}
 
-	private void resolveHorseTraders() {
+	protected void resolveHorseTraders() {
     	if (horseTradersPile.isEmpty())
     		return;
         if (DomEngine.haveToLog) 
@@ -304,7 +280,7 @@ public int getMoneyInHand( ) {
 	/**
      * 
      */
-    private void resolveDurationEffects() {
+    protected void resolveDurationEffects() {
 //        LOGGER.info(durationPile);
        for (DomCard aCard:cardsInPlay) {
          if (DomEngine.haveToLog) DomEngine.addToLog( this + " resolves duration effect from "+ aCard );
@@ -350,7 +326,7 @@ public int getMoneyInHand( ) {
         }
 	}
 
-    private void initializeTurn() {
+    protected void initializeTurn() {
       if (possessor==null && !extraOutpostTurn){
         turns++;
         sumTurns++;
@@ -453,7 +429,7 @@ public int getMoneyInHand( ) {
 //          if (DomEngine.haveToLog) DomEngine.addToLog( aCardName + " is no more available to buy");
           return false;
         }
-        if (!isPerson && suicideIfBuys(aCardName)){
+        if (suicideIfBuys(aCardName)){
           if (DomEngine.haveToLog) DomEngine.addToLog( 
         		  "<FONT style=\"BACKGROUND-COLOR: red\">SUICIDE!</FONT> Can not buy " + aCardName.toHTML());
           return false;
@@ -530,37 +506,31 @@ public int getMoneyInHand( ) {
     }
 
     public void playTreasures() {
-        DomCard theCardToPlay;
-        if (isPerson)
-        {
-        	//TODO something
-        }
-        else
-        {
-        	do {
-        		theCardToPlay = null;
-        		for (DomCard theCard : cardsInHand) {
-        			if (theCard.hasCardType(DomCardType.Treasure)) {
-        				if (theCardToPlay == null || theCard.getPlayPriority()<theCardToPlay.getPlayPriority()) {
-        					if (theCard.wantsToBePlayed())
-        						theCardToPlay = theCard;   
-        				}
-        			}
-        		}
-        		if (theCardToPlay!=null) {
-        			play(removeCardFromHand( theCardToPlay ));
-        		}
-        	} while (theCardToPlay!=null);
-        }
-        if (DomEngine.haveToLog) {
-          if (previousPlayedCardName!=null) {
-            DomEngine.addToLog( name + " plays " + (sameCardCount+1)+" "+ previousPlayedCardName.toHTML()
-            		           + (sameCardCount>0 ? "s" : ""));
-            previousPlayedCardName=null;
-            sameCardCount=0;
-          }
-          showBuyStatus();
-        }
+    	DomCard theCardToPlay;
+    	do {
+    		theCardToPlay = null;
+    		for (DomCard theCard : cardsInHand) {
+    			if (theCard.hasCardType(DomCardType.Treasure)) {
+    				if (theCardToPlay == null || theCard.getPlayPriority()<theCardToPlay.getPlayPriority()) {
+    					if (theCard.wantsToBePlayed())
+    						theCardToPlay = theCard;   
+    				}
+    			}
+    		}
+    		if (theCardToPlay!=null) {
+    			play(removeCardFromHand( theCardToPlay ));
+    		}
+    	} while (theCardToPlay!=null);
+
+    	if (DomEngine.haveToLog) {
+    		if (previousPlayedCardName!=null) {
+    			DomEngine.addToLog( name + " plays " + (sameCardCount+1)+" "+ previousPlayedCardName.toHTML()
+    					+ (sameCardCount>0 ? "s" : ""));
+    			previousPlayedCardName=null;
+    			sameCardCount=0;
+    		}
+    		showBuyStatus();
+    	}
     }
 
     /**
@@ -571,7 +541,7 @@ public int getMoneyInHand( ) {
       return cardsInHand.remove(cardsInHand.indexOf( theCardToPlay ));
     }
 
-    protected void doActionPhase() {
+    private void doActionPhase() {
       setPhase(DomPhase.Action);
 	  initializeTurn();
 	  resolveHorseTraders();
@@ -588,7 +558,7 @@ public int getMoneyInHand( ) {
 	  actionTime+=System.currentTimeMillis()-theTime;
     }
 
-    private void setPhase(DomPhase aPhase) {
+    protected void setPhase(DomPhase aPhase) {
        currentPhase = aPhase;	
 	}
 
@@ -597,40 +567,14 @@ public int getMoneyInHand( ) {
     	ArrayList<DomCard> theActionsToConsider = getCardsFromHand(DomCardType.Action);
     	if (theActionsToConsider.isEmpty())
     		return null;
-    	if (isPerson)
-    	{
-    		// TODO assumes that player can only choose a valid action
-    		System.out.println("I'm a person!");
-    		DomCardName cardName = playerChooseAction();
-    		if (cardName == null)
-				return null;
-    		else
-				return getCardsFromHand(cardName).get(0);
-    	}
-    	else
-    	{
-    		Collections.sort(theActionsToConsider,DomCard.SORT_FOR_PLAYING);
-    		for (DomCard card : theActionsToConsider){
-    			if (card.wantsToBePlayed())
-    				return card;
-    		}
-    		return null;
-    	}
-    }
 
-    private DomCardName playerChooseAction() {
-		// TODO Auto-generated method stub
-    	// This code should only run when there is an action the player could choose
-    	while (playerInterface.getSelection() == null) {
-    		try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+    	Collections.sort(theActionsToConsider,DomCard.SORT_FOR_PLAYING);
+    	for (DomCard card : theActionsToConsider){
+    		if (card.wantsToBePlayed())
+    			return card;
     	}
-		return null;
-	}
+    	return null;
+    }
 
 	/**
      * @param aCard
@@ -2065,17 +2009,7 @@ public int getMoneyInHand( ) {
 		return myBaneCard.toString();
 	}
 	
-	public boolean isPerson() {
-		return isPerson;
-	}
-
-	public void playAllTreasures() {
-		// TODO Auto-generated method stub
-		setPhase(DomPhase.Buy);
-		for (DomCard theCard : cardsInHand) {
-			if (theCard.hasCardType(DomCardType.Treasure) && !theCard.hasCardType(DomCardType.Kingdom)) {
-				play(removeCardFromHand( theCard ));
-			}
-		}
+	public void setBuysLeft(int buys) {
+		buysLeft = buys;
 	}
 }

@@ -26,6 +26,7 @@ public class DomGame {
   private int bridgeCount=0;
   private int princessCount=0;
   private int quarryCount=0;
+  private int activePlayerIndex = 0;
   private DomPlayer activePlayer;
   public boolean emptyPilesEnding=false;
 
@@ -55,6 +56,7 @@ private void initializePlayers() {
       thePlayer.initializeForGame(this);
     //adding the starting estates adds tokens to the trade route mat which we don't want
     getBoard().clearTradeRouteMat();
+    activePlayer = players.get(0);
 }
 
 /**
@@ -71,6 +73,14 @@ public ArrayList< DomPlayer > getPlayers() {
  */
 public DomCard takeFromSupply( DomCardName aCardName ) {
   return board.take(aCardName);
+}
+
+/**
+ * Sets the active player to be the next player
+ */
+public void cycleActivePlayer() {
+	activePlayerIndex = (activePlayerIndex + 1) % players.size();
+	activePlayer = players.get(activePlayerIndex);
 }
 
 /**
