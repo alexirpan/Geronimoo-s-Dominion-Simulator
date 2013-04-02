@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomPlayStrategy;
 
@@ -31,12 +32,19 @@ public class ApothecaryCard extends DomCard {
     	if (theCardToGrab!=null)
     	  owner.putInHand(theRevealedCards.remove(theRevealedCards.indexOf(theCardToGrab)));
       } while (theCardToGrab!=null && !theRevealedCards.isEmpty());
-      Collections.sort(theRevealedCards, SORT_FOR_DISCARDING);
-      if (!theRevealedCards.isEmpty() 
-        && owner.getPlayStrategyFor(this)==DomPlayStrategy.ApothecaryNativeVillage)
-    	checkForTheCombo(theRevealedCards);
-      for (DomCard theCard : theRevealedCards) {
-    	owner.putOnTopOfDeck(theCard);
+      if (owner instanceof DomHumanPlayer) {
+    	  ((DomHumanPlayer) owner).reorderCards(theRevealedCards, "Apothecary - reorder");
+    	  for (int i = theRevealedCards.size() - 1; i >= 0; i--) {
+    		  owner.putOnTopOfDeck(theRevealedCards.get(i));
+    	  }
+      } else {
+    	  Collections.sort(theRevealedCards, SORT_FOR_DISCARDING);
+    	  if (!theRevealedCards.isEmpty() 
+    			  && owner.getPlayStrategyFor(this)==DomPlayStrategy.ApothecaryNativeVillage)
+    		  checkForTheCombo(theRevealedCards);
+    	  for (DomCard theCard : theRevealedCards) {
+    		  owner.putOnTopOfDeck(theCard);
+    	  }
       }
     }
 

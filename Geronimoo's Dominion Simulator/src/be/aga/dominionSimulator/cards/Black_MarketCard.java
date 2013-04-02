@@ -11,7 +11,7 @@ import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomCost;
 import be.aga.dominionSimulator.DomEngine;
 import be.aga.dominionSimulator.enums.DomCardName;
-
+//TODO NOPE. NOPE NOT DOING HUMAN HERE. DOING IT LAST
 public class Black_MarketCard extends DomCard {
    protected static final Logger LOGGER = Logger.getLogger( Black_MarketCard.class );
    static {

@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomEngine;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
@@ -18,15 +19,20 @@ public class BishopCard extends DomCard {
       owner.addVP( 1);
       DomCard theCardToTrash = null;
       if (!owner.getCardsInHand().isEmpty()) {
-        theCardToTrash = findCardToTrash();
-        if (theCardToTrash==null) {
-          //this is needed when card is played with Throne Room effect
-          Collections.sort(owner.getCardsInHand(),SORT_FOR_TRASHING);
-          theCardToTrash=owner.getCardsInHand().get(0);
-        }
-        owner.trash(owner.removeCardFromHand( theCardToTrash ));
-        if (theCardToTrash.getCost(owner.getCurrentGame()).getCoins()>0)
-          owner.addVP(theCardToTrash.getCost(owner.getCurrentGame()).getCoins()/2);
+    	  //TODO test with Throne Room
+    	  if (owner instanceof DomHumanPlayer) {
+    		  theCardToTrash = ((DomHumanPlayer) owner).chooseExactlyNCardsFromList(1, owner.getCardsInHand(), "Bishop - choose card to trash").get(0);
+    	  } else {
+    		  theCardToTrash = findCardToTrash();
+    	  }
+    	  if (theCardToTrash==null) {
+    		  //this is needed when card is played with Throne Room effect
+    		  Collections.sort(owner.getCardsInHand(),SORT_FOR_TRASHING);
+    		  theCardToTrash=owner.getCardsInHand().get(0);
+    	  }
+    	  owner.trash(owner.removeCardFromHand( theCardToTrash ));
+    	  if (theCardToTrash.getCost(owner.getCurrentGame()).getCoins()>0)
+    		  owner.addVP(theCardToTrash.getCost(owner.getCurrentGame()).getCoins()/2);
       }
       handleOpponents();
     }
@@ -48,19 +54,37 @@ public class BishopCard extends DomCard {
 
 	private void handleOpponents() {
 		for (DomPlayer thePlayer : owner.getOpponents()) {
-		    boolean trashes=false;
-		    if (thePlayer.getCardsInHand().size()>0) {
-		      Collections.sort( thePlayer.getCardsInHand() , SORT_FOR_TRASHING);
-		      DomCard theCardToTrash = thePlayer.getCardsInHand().get( 0 );
-		      if (theCardToTrash.getTrashPriority()<16) {
-		        if (!thePlayer.removingReducesBuyingPower( theCardToTrash )){
-		          thePlayer.trash(thePlayer.removeCardFromHand( theCardToTrash));
-		          trashes=true;
-		        }
-		      }
-		    }
-		    if (DomEngine.haveToLog && !trashes) DomEngine.addToLog( thePlayer + " trashes nothing");
-		  }
+			if (thePlayer instanceof DomHumanPlayer) {
+				if (thePlayer.getCardsInHand().isEmpty()) {
+					DomEngine.addToLog( thePlayer + " has nothing to trash");
+				} else {
+					ArrayList<String> choices = new ArrayList<String>();
+					choices.add("Trash card");
+					choices.add("Don't trash");
+					if (((DomHumanPlayer) thePlayer).chooseOption(choices, owner + "'s Bishop - trash card?").startsWith("Trash")) {
+						DomCard cardToTrash = ((DomHumanPlayer) thePlayer).chooseExactlyNCardsFromList(1,
+																										thePlayer.getCardsInHand(),
+																										"Choose card to trash").get(0);
+						thePlayer.trash(thePlayer.removeCardFromHand(cardToTrash));
+					} else {
+						DomEngine.addToLog( thePlayer + " trashes nothing");
+					}
+				}
+			} else {
+				boolean trashes=false;
+				if (thePlayer.getCardsInHand().size()>0) {
+					Collections.sort( thePlayer.getCardsInHand() , SORT_FOR_TRASHING);
+					DomCard theCardToTrash = thePlayer.getCardsInHand().get( 0 );
+					if (theCardToTrash.getTrashPriority()<16) {
+						if (!thePlayer.removingReducesBuyingPower( theCardToTrash )){
+							thePlayer.trash(thePlayer.removeCardFromHand( theCardToTrash));
+							trashes=true;
+						}
+					}
+				}
+				if (DomEngine.haveToLog && !trashes) DomEngine.addToLog( thePlayer + " trashes nothing");
+			}
+		}
 	}
 
 	@Override

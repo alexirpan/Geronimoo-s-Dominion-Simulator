@@ -20,11 +20,13 @@ public class DomCardLabel extends JLabel {
 	private Object myParentSize;
 	private DomGameFrame myGameFrame;
 	private DomCardName myCardName;
+	private String baseText;
 	
 	public DomCardLabel(DomCardName aCardName, DomGameFrame aGameFrame) {
 		myCardName = aCardName;
 		myGameFrame = aGameFrame;
-		setText("<html>"+aCardName.toHTML()+"</html>");
+		baseText = aCardName.toHTML();
+		setText("<html>"+baseText+"</html>");
 //		URL url = aCardName.getImageURL();
 //		if (url!=null) {
 //	        myOriginalIcon=new ImageIcon(url);
@@ -72,5 +74,14 @@ public class DomCardLabel extends JLabel {
        myCardName=aCardName;
 	   myOriginalIcon=new ImageIcon(aCardName.getCompleteImageLocation());
 	   setIcon(myOriginalIcon);
+	}
+	
+	public DomCardName getCardName() {
+		return myCardName;
+	}
+	
+	public void setSupply(int num) {
+		setText("<html>" + baseText + " (" + num + ")</html>");
+		repaint();
 	}
 }

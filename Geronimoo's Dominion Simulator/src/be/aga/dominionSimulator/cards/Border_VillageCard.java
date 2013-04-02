@@ -2,6 +2,7 @@ package be.aga.dominionSimulator.cards;
 
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomCost;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
 
@@ -19,14 +20,18 @@ public class Border_VillageCard extends DomCard {
     public void doWhenGained() {
     	//determine the cost of the card we're going to gain
     	DomCost theCost = getCost(owner.getCurrentGame()).add(new DomCost(-1, 0));
-    	//try to gain a card that player wants according to his buy rules
-        DomCardName theDesiredCard = owner.getDesiredCard(theCost, false);
-        if (theDesiredCard==null) {
-          //if no suitable card found, get the best card from supply
-      	  theDesiredCard=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, theCost);
-        }
-        if (theDesiredCard!=null)
-          owner.gain(theDesiredCard);
+    	if (owner instanceof DomHumanPlayer) {
+    		((DomHumanPlayer) owner).gainCardUpToCost(theCost, "Border Village on gain - gain a card");
+    	} else {
+    		//try to gain a card that player wants according to his buy rules
+    		DomCardName theDesiredCard = owner.getDesiredCard(theCost, false);
+    		if (theDesiredCard==null) {
+    			//if no suitable card found, get the best card from supply
+    			theDesiredCard=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, theCost);
+    		}
+    		if (theDesiredCard!=null)
+    			owner.gain(theDesiredCard);
+    	}
     }
     @Override
     public boolean wantsToBePlayed() {

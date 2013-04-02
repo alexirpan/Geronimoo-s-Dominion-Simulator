@@ -49,16 +49,16 @@ public class DomCost implements Comparable< DomCost >{
      */
     @Override
     public int compareTo( DomCost aO ) {
-    	//CAREFUL when using this!!
-    	//the cost of King's Court for example will be smaller then the cost of Transmute
-    	//and the cost of Transmute will also be smaller than the cost of King's Court! 
-        if (this.coins<aO.getCoins() || this.potions<aO.getPotions())
+    	// A non-potion card costs less than any other potion card
+        if (this.potions<aO.getPotions())
            return -1;
-        
-        if (this.coins==aO.getCoins() && this.potions==aO.getPotions()) 
-            return 0;
-
-        return 1;
+        if (this.potions > aO.getPotions())
+        	return 1;
+        if (this.coins < aO.getCoins())
+        	return -1;
+        if (this.coins > aO.getCoins())
+        	return 1;
+        return 0;
     }
 
     /**

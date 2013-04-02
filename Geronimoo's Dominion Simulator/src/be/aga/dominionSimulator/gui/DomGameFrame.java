@@ -20,11 +20,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 
 import com.sun.org.apache.xerces.internal.impl.RevalidationHandler;
 
+import be.aga.dominionSimulator.DomBoard;
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomCost;
 import be.aga.dominionSimulator.DomEngine;
 import be.aga.dominionSimulator.DomGame;
 import be.aga.dominionSimulator.DomHumanPlayer;
@@ -41,7 +44,6 @@ public class DomGameFrame extends JFrame implements ActionListener {
 	private JLabel myTurnLabel;
 	private JLabel myBuysLabel;
 	private HashMap<JLabel, DomCardName> myBoardCards = new HashMap<JLabel, DomCardName>();
-	private HashMap<DomCardName, Integer> supplyValues = new HashMap<DomCardName, Integer>();
 	private JEditorPane myLogArea;
 	private JPanel myInPlayPanel;
 	private DomHandPanel myHandPanel;
@@ -50,7 +52,8 @@ public class DomGameFrame extends JFrame implements ActionListener {
 	private DomCardLabel myBigImage;
 	private JLabel selection;
 	private final JLabel PASS = new JLabel(); // Other methods set selection to PASS when appropriate
-	private DomGame myGame = null;
+	private DomGame myGame;
+	private DomBoard myBoard;
 	
 	private final int SPLIT_DIVIDER_SIZE = 5;
 	private JButton myAddTreasureBTN;
@@ -90,7 +93,7 @@ private void buildGUI() {
 }
 
 private JSplitPane getBottomSplit() {
-    JSplitPane theSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, getInfoSplit(), getInPlayAndHandSplit());
+    JSplitPane theSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, getInfoSplit(), getLogAndHandSplit());
     theSplit.setResizeWeight(0.1);
     theSplit.setDividerSize(SPLIT_DIVIDER_SIZE*2);
     theSplit.resetToPreferredSizes();
@@ -98,7 +101,7 @@ private JSplitPane getBottomSplit() {
 }
 
 private JSplitPane getInfoSplit() {
-    JSplitPane theSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, getInfoPanel(), new JScrollPane(getLogPanel()));
+    JSplitPane theSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, getInfoPanel(), getInPlayPanel());
     theSplit.setResizeWeight(0);
     theSplit.setDividerSize(SPLIT_DIVIDER_SIZE);
     theSplit.resetToPreferredSizes();
@@ -184,7 +187,7 @@ private JPanel getKingdomPanel() {
 	myKingdomPanel.setMinimumSize(new Dimension(100,100));
 	for (DomCardName cardName : myEngine.getCardsUsed()) {
 		if (cardName.getSet()!=DomSet.Common){
-			JLabel label = getCardLabel(cardName);
+			DomCardLabel label = getCardLabel(cardName);
 			label.addMouseListener(new SupplyCardListener(cardName, this));
 		    myKingdomPanel.add(label, theCons);
 			theCons.gridx++;
@@ -200,7 +203,7 @@ private JPanel getCommonPanel() {
 	myCommonPanel.setMinimumSize(new Dimension(100,100));
 	for (DomCardName cardName : myEngine.getCardsUsed()) {
 		if (cardName.getSet()==DomSet.Common){
-			JLabel label = getCardLabel(cardName);
+			DomCardLabel label = getCardLabel(cardName);
 			label.addMouseListener(new SupplyCardListener(cardName, this));
 		    myCommonPanel.add(label, theCons);
 			theCons.gridx++;
@@ -209,7 +212,7 @@ private JPanel getCommonPanel() {
 	return myCommonPanel;
 }
 
-private JLabel getCardLabel(DomCardName cardName) {
+private DomCardLabel getCardLabel(DomCardName cardName) {
     DomCardLabel theLBL = new DomCardLabel(cardName, this);
     myBoardCards.put(theLBL, cardName);
     return theLBL;
@@ -222,8 +225,9 @@ private JLabel getCardLabel(DomCardName cardName) {
 //	return myLogArea;
 //}
 
-private Component getInPlayAndHandSplit() {
-    JSplitPane theSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, getInPlayPanel(), getHandAndButtonsSplit());
+private Component getLogAndHandSplit() {
+	JScrollPane log = new JScrollPane(getLogPanel());
+    JSplitPane theSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, false, log, getHandAndButtonsSplit());
     theSplit.setResizeWeight(0.3);
     theSplit.setDividerSize(SPLIT_DIVIDER_SIZE);
 	return theSplit;
@@ -416,10 +420,41 @@ public void updateLabels() {
 	}
 	myDollarLabel.setText("Money: $" + money);
 	myDollarLabel.repaint();
+	for (Component c : myCommonPanel.getComponents()) {
+		if (c instanceof DomCardLabel) {
+			int numCopies = myBoard.count(myBoardCards.get((JLabel) c));
+			((DomCardLabel) c).setSupply(numCopies);
+		}
+	}
+	for (Component c : myKingdomPanel.getComponents()) {
+		if (c instanceof DomCardLabel) {
+			int numCopies = myBoard.count(myBoardCards.get((JLabel) c));
+			((DomCardLabel) c).setSupply(numCopies);
+		}
+	}
 }
 
 
-public void setGame(DomGame game) {
+public void setGameAndBoard(DomGame game) {
 	myGame = game;
+	myBoard = game.getBoard();
+}
+
+public ArrayList<DomCardName> gainableCardsUpToCost(DomCost cost) {
+	ArrayList<DomCardName> cardNames = new ArrayList<DomCardName>();
+	for (DomCardName name : myBoard.keySet()) {
+		if ((name.getCost(myGame).compareTo(cost) <= 0) && (myBoard.count(name) > 0))
+			cardNames.add(name);
+	}
+	return cardNames;
+}
+
+public ArrayList<DomCardName> gainableCardsExactCost(DomCost domCost) {
+	ArrayList<DomCardName> cardNames = new ArrayList<DomCardName>();
+	for (DomCardName name : myBoard.keySet()) {
+		if ((name.getCost(myGame).compareTo(domCost) == 0) && (myBoard.count(name) > 0))
+			cardNames.add(name);
+	}
+	return cardNames;
 }
 }

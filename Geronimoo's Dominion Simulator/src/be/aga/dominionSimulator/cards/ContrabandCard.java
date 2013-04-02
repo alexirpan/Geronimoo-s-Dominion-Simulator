@@ -10,6 +10,7 @@ public class ContrabandCard extends DomCard {
       super( DomCardName.Contraband);
     }
 
+    //TODO deal with bans
     public void play() {
       owner.availableCoins+=getCoinValue();        
       owner.addAvailableBuys(1);

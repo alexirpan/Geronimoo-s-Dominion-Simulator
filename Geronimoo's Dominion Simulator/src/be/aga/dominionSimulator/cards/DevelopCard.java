@@ -1,9 +1,11 @@
 package be.aga.dominionSimulator.cards;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomCost;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
 public class DevelopCard extends DomCard {
@@ -15,6 +17,22 @@ public class DevelopCard extends DomCard {
     public void play() {
         if (owner.getCardsInHand().isEmpty())
         	return;
+        if (owner instanceof DomHumanPlayer) {
+        	DomCard trashed = ((DomHumanPlayer) owner).chooseExactlyNCardsFromList(1, owner.getCardsInHand(), "Develop - trash a card").get(0);
+        	DomCost upCost = trashed.getName().getCost(owner.getCurrentGame()).add(new DomCost(1,0));
+        	DomCost downCost = trashed.getName().getCost(owner.getCurrentGame()).add(new DomCost(-1,0));
+        	ArrayList<String> orderChoices = new ArrayList<String>();
+        	orderChoices.add("Gain " + downCost);
+        	orderChoices.add("Gain " + upCost);
+        	String choice = ((DomHumanPlayer) owner).chooseOption(orderChoices, "Develop - choose gain order (choice goes on top)");
+        	if (choice.equals("Gain " + downCost)) {
+        		((DomHumanPlayer) owner).gainCardOfExactCost(upCost, "Develop - gain card of cost " + upCost, true);
+        		((DomHumanPlayer) owner).gainCardOfExactCost(downCost, "Develop - gain card of cost " + downCost, true);
+        	} else {
+        		((DomHumanPlayer) owner).gainCardOfExactCost(downCost, "Develop - gain card of cost " + downCost, true);
+        		((DomHumanPlayer) owner).gainCardOfExactCost(upCost, "Develop - gain card of cost " + upCost, true);
+        	}
+        }
         Collections.sort( owner.getCardsInHand(), SORT_FOR_TRASHING);
         //find a card that will gain 2 cards
         for (DomCard theCard : owner.getCardsInHand()) {

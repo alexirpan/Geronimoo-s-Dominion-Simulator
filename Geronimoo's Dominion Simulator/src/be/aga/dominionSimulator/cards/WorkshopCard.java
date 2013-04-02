@@ -1,7 +1,10 @@
 package be.aga.dominionSimulator.cards;
 
+import java.util.ArrayList;
+
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomCost;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
 public class WorkshopCard extends DomCard {
@@ -10,13 +13,17 @@ public class WorkshopCard extends DomCard {
     }
 
     public void play() {
-      DomCardName theDesiredCard = owner.getDesiredCard(new DomCost( 4, 0), false);
-      if (theDesiredCard==null) {
-        //possible to get here if card was throne-roomed
-    	theDesiredCard=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, new DomCost(4, 0));
-      }
-      if (theDesiredCard!=null)
-        owner.gain(theDesiredCard);
+    	if (owner instanceof DomHumanPlayer) {
+    		((DomHumanPlayer) owner).gainCardUpToCost(new DomCost(4,0), "Workshop - gain card");
+    	} else {
+    		DomCardName theDesiredCard = owner.getDesiredCard(new DomCost( 4, 0), false);
+    		if (theDesiredCard==null) {
+    			//possible to get here if card was throne-roomed
+    			theDesiredCard=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, new DomCost(4, 0));
+    		}
+    		if (theDesiredCard!=null)
+    			owner.gain(theDesiredCard);
+    	}
     }
     
     @Override

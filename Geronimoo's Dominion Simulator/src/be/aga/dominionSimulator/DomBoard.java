@@ -378,7 +378,7 @@ public class DomBoard extends EnumMap< DomCardName, ArrayList<DomCard> > {
 
 	private static boolean isExcluded(DomCardName cardName) {
 		// TODO Auto-generated method stub
-		return false;
+		return cardName.hasCardType(DomCardType.Prize);
 	}
 
 	private static boolean isExcluded(DomSet set) {

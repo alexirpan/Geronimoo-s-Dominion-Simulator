@@ -41,10 +41,10 @@ public class DomPlayer implements Comparable< DomPlayer >{
    private EnumMap< DomCardName, DomPlayStrategy >  playStrategies = new EnumMap< DomCardName, DomPlayStrategy >(DomCardName.class);
 
    private DomDeck deck = new DomDeck(this);
-   private ArrayList< DomCard > cardsInPlay = new ArrayList< DomCard >();
+   protected ArrayList< DomCard > cardsInPlay = new ArrayList< DomCard >();
    private ArrayList< DomCard > cardsInHand = new ArrayList< DomCard >();
    private ArrayList< DomCard > nativeVillageMat = new ArrayList< DomCard >();
-   private ArrayList<DomCard> horseTradersPile=new ArrayList<DomCard>();
+   protected ArrayList<DomCard> horseTradersPile=new ArrayList<DomCard>();
    
    protected String name;
    public int actionsLeft;
@@ -75,8 +75,8 @@ public class DomPlayer implements Comparable< DomPlayer >{
    private ArrayList<DomPlayer> possessionTurns=new ArrayList<DomPlayer>();
    DomPlayer possessor;
    private ArrayList<DomCardName> cardsGainedLastTurn=new ArrayList<DomCardName>();
-   private int sameCardCount=0;
-   private DomCardName previousPlayedCardName=null;
+   protected int sameCardCount=0;
+   protected DomCardName previousPlayedCardName=null;
    public boolean pprUsed=false;
    private HashSet<DomBotType> types=new HashSet<DomBotType>();
    private String description="No description available";
@@ -363,7 +363,7 @@ public int getMoneyInHand( ) {
     	buyTime+=System.currentTimeMillis()-theTime;
     }
 
-	private void showBuyStatus() {
+	protected void showBuyStatus() {
     	StringBuilder theMessage = new StringBuilder();
         theMessage.append(this + " has $" + availableCoins);
         if (availablePotions>0) {

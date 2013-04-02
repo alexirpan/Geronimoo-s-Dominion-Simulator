@@ -265,13 +265,15 @@ public class DomEngine {
     	players.clear();
     	players.addAll(thePlayers);
     	DomBoard theBoard = null;
+    	/*
     	if (!keepOrder) {
     		Collections.shuffle(players);
     	}
+    	*/
     	haveToLog = true;
     	DomGame theGame = new DomGame(theBoard, players, null );
     	cardNames = theGame.board.keySet();
-    	gui.setGame(theGame);
+    	gui.setGameAndBoard(theGame);
     	gui.initialize();
     }
 

@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomEngine;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
@@ -15,13 +16,18 @@ public class Secret_ChamberCard extends DomCard {
     }
 
     public void play() {
-      if (owner.getActionsLeft()>0 
-      && !owner.getCardsFromHand(DomCardName.Tactician).isEmpty() 
-      && owner.getCardsInHand().size()>=2) {
-    	handleTactician();
-      } else {
-        playNormal();
-      }
+    	if (owner instanceof DomHumanPlayer) {
+    		int numDiscarded = ((DomHumanPlayer) owner).discardAnyNumberOfCards("Secret Chamber - discard for $").size();
+    		owner.addAvailableCoins(numDiscarded);
+    	} else {
+    		if (owner.getActionsLeft()>0 
+    				&& !owner.getCardsFromHand(DomCardName.Tactician).isEmpty() 
+    				&& owner.getCardsInHand().size()>=2) {
+    			handleTactician();
+    		} else {
+    			playNormal();
+    		}
+    	}
     }
 
 	private void playNormal() {
@@ -38,25 +44,29 @@ public class Secret_ChamberCard extends DomCard {
 		  } while (!owner.getCardsInHand().isEmpty());
 	}
 
-    public void react() {
-       if (DomEngine.haveToLog) DomEngine.addToLog( owner + " reveals " + this );
-       owner.drawCards(2);
-       for (DomPlayer player : owner.getOpponents()){
-    	   if (!player.getCardsFromPlay(DomCardName.Mountebank).isEmpty()){
-    		   reactForMountebank();
-    		   return;
-    	   }
-    	   if (!player.getCardsFromPlay(DomCardName.Pirate_Ship).isEmpty()){
-    		   reactForPirate_Ship();
-    		   return;
-    	   }
-    	   //TODO Rabble
-    	   //TODO Saboteur
-    	   //TODO Thief
-    	   //TODO Militia/Goons/Ghost Ship/...
-    	   //TODO Menagerie in hand!
-       }
-       owner.doForcedDiscard(2,true);
+	public void react() {
+		if (DomEngine.haveToLog) DomEngine.addToLog( owner + " reveals " + this );
+		owner.drawCards(2);
+		if (owner instanceof DomHumanPlayer) {
+			((DomHumanPlayer) owner).doForcedDiscard(2, true, "Secret Chamber reaction - topdeck 2 cards");
+		} else {
+			for (DomPlayer player : owner.getOpponents()){
+				if (!player.getCardsFromPlay(DomCardName.Mountebank).isEmpty()){
+					reactForMountebank();
+					return;
+				}
+				if (!player.getCardsFromPlay(DomCardName.Pirate_Ship).isEmpty()){
+					reactForPirate_Ship();
+					return;
+				}
+				//TODO Rabble
+				//TODO Saboteur
+				//TODO Thief
+				//TODO Militia/Goons/Ghost Ship/...
+				//TODO Menagerie in hand!
+			}
+			owner.doForcedDiscard(2,true);
+		}
     }
 
 	private void reactForPirate_Ship() {

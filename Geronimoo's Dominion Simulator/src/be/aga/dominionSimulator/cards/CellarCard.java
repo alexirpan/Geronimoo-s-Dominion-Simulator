@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
 
@@ -19,9 +20,13 @@ public class CellarCard extends DomCard {
   	  deckSize = owner.getDeckSize();
       owner.addActions( 1 );
       discardCount=0;
-      discardExcessTerminalActions();
-      discardOtherCellars();
-      discardBadCards();
+      if (owner instanceof DomHumanPlayer) {
+    	  discardCount = ((DomHumanPlayer) owner).discardAnyNumberOfCards("Cellar - discard cards").size();
+      } else {
+    	  discardExcessTerminalActions();
+    	  discardOtherCellars();
+    	  discardBadCards();
+      }
       owner.drawCards( discardCount );
     }
 

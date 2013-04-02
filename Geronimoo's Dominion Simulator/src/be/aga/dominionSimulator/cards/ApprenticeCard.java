@@ -3,6 +3,7 @@ package be.aga.dominionSimulator.cards;
 import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
 
@@ -15,16 +16,22 @@ public class ApprenticeCard extends DomCard {
       owner.addActions( 1 );
       if (owner.getCardsInHand().isEmpty())
     	  return;
-      Collections.sort( owner.getCardsInHand() , SORT_FOR_TRASHING);
-      DomCard theCardToTrash = owner.getCardsInHand().get(0);
-      for (DomCard theCard : owner.getCardsInHand()) {
-    	  if (getApprenticeValue(theCard) > 0 && enoughMoneyLeft(theCard) && areVPsNotInDanger(theCard)){
-             theCardToTrash=theCard;
-             break;
+      if (owner instanceof DomHumanPlayer) {
+    	  DomCard c = ((DomHumanPlayer) owner).chooseExactlyNCardsFromList(1, owner.getCardsInHand(), "Apprentice - choose card to trash").get(0);
+    	  owner.trash(owner.removeCardFromHand(c));
+    	  owner.drawCards(getApprenticeValue(c));
+      } else {
+    	  Collections.sort( owner.getCardsInHand() , SORT_FOR_TRASHING);
+    	  DomCard theCardToTrash = owner.getCardsInHand().get(0);
+    	  for (DomCard theCard : owner.getCardsInHand()) {
+    		  if (getApprenticeValue(theCard) > 0 && enoughMoneyLeft(theCard) && areVPsNotInDanger(theCard)){
+    			  theCardToTrash=theCard;
+    			  break;
+    		  }
     	  }
+    	  owner.trash(owner.removeCardFromHand( theCardToTrash));
+    	  owner.drawCards(getApprenticeValue(theCardToTrash));
       }
-      owner.trash(owner.removeCardFromHand( theCardToTrash));
-      owner.drawCards(getApprenticeValue(theCardToTrash));
     }
 
 	private boolean areVPsNotInDanger(DomCard theCard) {
