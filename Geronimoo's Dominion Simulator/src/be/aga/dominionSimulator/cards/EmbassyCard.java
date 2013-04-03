@@ -1,6 +1,7 @@
 package be.aga.dominionSimulator.cards;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
@@ -12,7 +13,11 @@ public class EmbassyCard extends DomCard {
     @Override
     public void play() {
       owner.drawCards( 5 );
-      owner.doForcedDiscard(3, false);
+      if (owner instanceof DomHumanPlayer) {
+    	  ((DomHumanPlayer) owner).doForcedDiscard(3, false, "Embassy - discard 3 cards");
+      } else {
+    	  owner.doForcedDiscard(3, false);
+      }
     }
     
     @Override

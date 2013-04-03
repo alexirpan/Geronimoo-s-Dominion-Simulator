@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomCost;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
 public class FarmlandCard extends DomCard {
@@ -14,23 +15,29 @@ public class FarmlandCard extends DomCard {
     public void remodelSomething() {
       if (owner.getCardsInHand().isEmpty())
     	return;
-      Collections.sort(owner.getCardsInHand(),SORT_FOR_TRASHING);
-      DomCardName theDesiredCard =null;
-      for (DomCard card : owner.getCardsInHand()){
-    	  theDesiredCard =owner.getDesiredCard(card.getCost(owner.getCurrentGame()).add(new DomCost(2, 0)), true); 
-    	  if (theDesiredCard!=null){
-    		  owner.trash(owner.removeCardFromHand(card));
-    		  owner.gain(theDesiredCard);
-    		  return;
+      if (owner instanceof DomHumanPlayer) {
+    	  DomCard trashed = ((DomHumanPlayer) owner).chooseExactlyNCardsFromList(1, owner.getCardsInHand(), "Farmland - remodel a card").get(0);
+    	  owner.trash(owner.removeCardFromHand(trashed));
+    	  ((DomHumanPlayer) owner).gainCardUpToCost(trashed.getCost(owner.getCurrentGame()).add(new DomCost(2,0)), "Farmland - gain a card");
+      } else {
+    	  Collections.sort(owner.getCardsInHand(),SORT_FOR_TRASHING);
+    	  DomCardName theDesiredCard =null;
+    	  for (DomCard card : owner.getCardsInHand()){
+    		  theDesiredCard =owner.getDesiredCard(card.getCost(owner.getCurrentGame()).add(new DomCost(2, 0)), true); 
+    		  if (theDesiredCard!=null){
+    			  owner.trash(owner.removeCardFromHand(card));
+    			  owner.gain(theDesiredCard);
+    			  return;
+    		  }
     	  }
+    	  //we arrive here, so nothing was trashed because no valid target
+    	  DomCard theCard = owner.getCardsInHand().get(0);
+    	  DomCost theCost = theCard.getCost(owner.getCurrentGame()).add(new DomCost(2, 0));
+    	  owner.trash(owner.removeCardFromHand( theCard));
+    	  theDesiredCard=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, theCost, true);
+    	  if (theDesiredCard!=null)
+    		  owner.gain(theDesiredCard);
       }
-      //we arrive here, so nothing was trashed because no valid target
-      DomCard theCard = owner.getCardsInHand().get(0);
-      DomCost theCost = theCard.getCost(owner.getCurrentGame()).add(new DomCost(2, 0));
-      owner.trash(owner.removeCardFromHand( theCard));
-      theDesiredCard=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, theCost, true);
-      if (theDesiredCard!=null)
-    	  owner.gain(theDesiredCard);
     }
     
     @Override

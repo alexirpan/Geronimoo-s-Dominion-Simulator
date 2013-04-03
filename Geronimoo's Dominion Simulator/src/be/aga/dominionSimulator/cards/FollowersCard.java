@@ -1,6 +1,7 @@
 package be.aga.dominionSimulator.cards;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
@@ -20,7 +21,10 @@ public class FollowersCard extends DomCard {
           continue;
         if (owner.getCurrentGame().countInSupply(DomCardName.Curse )>0)
           thePlayer.gain(DomCardName.Curse);
-        thePlayer.doForcedDiscard(thePlayer.getCardsInHand().size()-3, false);
+        if (thePlayer instanceof DomHumanPlayer)
+        	((DomHumanPlayer) thePlayer).doForcedDiscard(thePlayer.getCardsInHand().size()-3, false, "Followers - discard down to 3 cards");
+        else
+        	thePlayer.doForcedDiscard(thePlayer.getCardsInHand().size()-3, false);
       }
     }
 }

@@ -3,6 +3,7 @@ package be.aga.dominionSimulator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JDialog;
 import javax.swing.JInternalFrame;
@@ -201,10 +202,15 @@ public class DomHumanPlayer extends DomPlayer {
 	public void doForcedDiscard(int discardsLeft, boolean discardToTopOfDeck, String message) {
 		if (discardsLeft <= 0)
 			return;
-		ArrayList<DomCard> cardsToDiscard = chooseExactlyNCardsFromList(Math.min(discardsLeft, getCardsInHand().size()), getCardsInHand(), message);
+		if (discardsLeft > getCardsInHand().size()) {
+			doForcedDiscard(getCardsInHand().size(), discardToTopOfDeck, message);
+			return;
+		}
+		ArrayList<DomCard> cardsToDiscard = chooseExactlyNCardsFromList(discardsLeft, getCardsInHand(), message);
 		if (discardToTopOfDeck) {
-			for (DomCard c : cardsToDiscard) {
-				discardFromHandToTopOfDeck(c);
+			cardsToDiscard = reorderCards(cardsToDiscard, "Reorder top-decked cards");
+			for (int i = cardsToDiscard.size(); i >= 0; i--) {
+				discardFromHandToTopOfDeck(cardsToDiscard.get(i));
 			}
 		} else {
 			for (DomCard c : cardsToDiscard) {
@@ -263,5 +269,20 @@ public class DomHumanPlayer extends DomPlayer {
 			}
 			gain(cardName);
 		}
+	}
+
+	public DomCardName nameCard(String message) 
+	{
+		Set<DomCardName> validNames = getCurrentGame().getBoard().keySet();
+		ArrayList<String> names = new ArrayList<String>();
+		for (DomCardName n : validNames) {
+			names.add(n.toString());
+		}
+		String choice = chooseOption(names, message);
+		for (DomCardName n : validNames) {
+			if (n.toString().equals(choice))
+				return n;
+		}
+		return null;
 	}
 }

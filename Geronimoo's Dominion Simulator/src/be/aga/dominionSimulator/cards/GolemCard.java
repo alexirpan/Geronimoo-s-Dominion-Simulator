@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
 
@@ -30,7 +31,11 @@ public class GolemCard extends DomCard {
     	  return;
       //adding 2 actions = fix to make sure the Golemed cards can be played
       owner.actionsLeft+=2;
-      Collections.sort(theRevealedActions,SORT_FOR_PLAYING);
+      if (owner instanceof DomHumanPlayer) {
+    	  theRevealedActions = ((DomHumanPlayer) owner).reorderCards(theRevealedActions, "Golem - reorder played cards (front played first)");
+      } else {
+    	  Collections.sort(theRevealedActions,SORT_FOR_PLAYING);
+      }
       while (!theRevealedActions.isEmpty()) {
         owner.play(theRevealedActions.remove(0));
       }

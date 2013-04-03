@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomCost;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
 
@@ -16,7 +17,13 @@ public class ExpandCard extends DomCard {
     public void play() {
       if (owner.getCardsInHand().isEmpty())
     	return;
-      DomCard theCardToTrash = findCardToTrash();
+      //TODO test with Throne Room
+      DomCard theCardToTrash;
+      if (owner instanceof DomHumanPlayer) {
+    	  theCardToTrash = ((DomHumanPlayer) owner).chooseExactlyNCardsFromList(1, owner.getCardsInHand(), "Expand - trash a card").get(0);    	  
+      } else {
+    	  theCardToTrash = findCardToTrash();
+      }
       if (theCardToTrash==null) {
         //this is needed when card is played with Throne Room effect
         Collections.sort(owner.getCardsInHand(),SORT_FOR_TRASHING);
@@ -24,11 +31,15 @@ public class ExpandCard extends DomCard {
       }
       owner.trash(owner.removeCardFromHand( theCardToTrash));
       DomCost theMaxCostOfCardToGain = new DomCost( theCardToTrash.getCoinCost(owner.getCurrentGame()) + 3, theCardToTrash.getPotionCost());
-	  DomCardName theDesiredCard = owner.getDesiredCard(theMaxCostOfCardToGain, false);
-      if (theDesiredCard==null)
-    	theDesiredCard=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, theMaxCostOfCardToGain);
-      if (theDesiredCard!=null)
-        owner.gain(theDesiredCard);
+	  if (owner instanceof DomHumanPlayer) {
+		  ((DomHumanPlayer) owner).gainCardUpToCost(theMaxCostOfCardToGain, "Expand - gain a card");
+	  } else {
+		  DomCardName theDesiredCard = owner.getDesiredCard(theMaxCostOfCardToGain, false);
+		  if (theDesiredCard==null)
+			  theDesiredCard=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, theMaxCostOfCardToGain);
+		  if (theDesiredCard!=null)
+			  owner.gain(theDesiredCard);
+	  }
     }
     
     private DomCard findCardToTrash() {

@@ -4,16 +4,29 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
+import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
 public class EnvoyCard extends DomCard {
-    public EnvoyCard () {
+	public EnvoyCard () {
       super( DomCardName.Envoy);
     }
 
     public void play() {
       ArrayList<DomCard> theRevealedCards = owner.revealTopCards( 5 );
-      discardBestCard(theRevealedCards);
+      if (owner.getOpponents().isEmpty()) {
+    	  discardBestCard(theRevealedCards);
+      } else {
+    	  DomPlayer next = owner.getOpponents().get(0);
+    	  if (next instanceof DomHumanPlayer) {
+    		  DomCard discarded = ((DomHumanPlayer) next).chooseExactlyNCardsFromList(1, theRevealedCards, "Envoy - choose card to discard").get(0);
+    		  theRevealedCards.remove(discarded);
+    		  owner.discard(discarded);
+    	  } else {
+    		  discardBestCard(theRevealedCards);
+    	  }
+      }
       owner.getCardsInHand().addAll(theRevealedCards);
     }
 

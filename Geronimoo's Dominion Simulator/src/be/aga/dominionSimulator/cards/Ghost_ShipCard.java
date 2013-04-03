@@ -1,6 +1,7 @@
 package be.aga.dominionSimulator.cards;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
@@ -14,7 +15,11 @@ public class Ghost_ShipCard extends DomCard {
       for (DomPlayer thePlayer : owner.getOpponents()) {
         if (thePlayer.checkDefense()) 
         	continue;
-        thePlayer.doForcedDiscard(thePlayer.getCardsInHand().size()-3, true);
+        if (thePlayer instanceof DomHumanPlayer) {
+        	((DomHumanPlayer) thePlayer).doForcedDiscard(thePlayer.getCardsInHand().size()-3, true, "Ghost Ship - topdeck to 3 cards in hand");
+        } else {
+        	thePlayer.doForcedDiscard(thePlayer.getCardsInHand().size()-3, true);
+        }
       }
     }
 }
