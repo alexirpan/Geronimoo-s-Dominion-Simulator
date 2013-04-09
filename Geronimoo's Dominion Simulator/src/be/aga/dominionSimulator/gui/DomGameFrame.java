@@ -69,7 +69,6 @@ public DomGameFrame(DomEngine anEngine, DomHumanPlayer theHuman) {
 }
 
 public void initialize() {
-	 thePlayer.setPhase(DomPhase.Action);
 	 myLogArea = new JEditorPane();
 	 myLogArea.setEditable(false);
 	 myLogArea.setContentType("text/html");

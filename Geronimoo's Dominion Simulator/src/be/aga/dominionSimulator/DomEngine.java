@@ -29,6 +29,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import be.aga.dominionSimulator.enums.DomBotType;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
+import be.aga.dominionSimulator.enums.DomPhase;
 import be.aga.dominionSimulator.enums.DomSet;
 import be.aga.dominionSimulator.gui.DomBarChart;
 import be.aga.dominionSimulator.gui.DomGameFrame;
@@ -264,16 +265,16 @@ public class DomEngine {
     	myLog="<BR><HR><B>Game Log</B><BR>";
     	players.clear();
     	players.addAll(thePlayers);
-    	DomBoard theBoard = null;
     	/*
     	if (!keepOrder) {
     		Collections.shuffle(players);
     	}
     	*/
     	haveToLog = true;
-    	DomGame theGame = new DomGame(theBoard, players, null );
+    	DomGame theGame = new DomGame(null, players, null );
     	cardNames = theGame.board.keySet();
     	gui.setGameAndBoard(theGame);
+    	gui.getPlayer().initializeTurn();
     	gui.initialize();
     }
 
