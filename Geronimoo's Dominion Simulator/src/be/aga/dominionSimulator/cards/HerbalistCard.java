@@ -7,6 +7,7 @@ import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
 
 public class HerbalistCard extends DomCard {
+	// TODO check how Herbalist is handled
     public HerbalistCard () {
       super( DomCardName.Herbalist);
     }

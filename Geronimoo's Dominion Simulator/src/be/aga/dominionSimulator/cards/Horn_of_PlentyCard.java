@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomCost;
 import be.aga.dominionSimulator.DomEngine;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
 
@@ -22,16 +23,23 @@ public class Horn_of_PlentyCard extends DomCard {
       }
       if (DomEngine.haveToLog) 
       	DomEngine.addToLog( owner + " has " + theSingleCards.size() + " different cards in play");
-      DomCardName theCardToGain = owner.getDesiredCard(new DomCost(theSingleCards.size(), 0), false);
-      if (theCardToGain==null) {
-    	//possibly null if played by Venture
-        theCardToGain=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, new DomCost(theSingleCards.size(), 0));
+      if (owner instanceof DomHumanPlayer) {
+    	  DomCardName n = ((DomHumanPlayer) owner).gainCardUpToCost(new DomCost(theSingleCards.size(), 0), "Horn of Plenty - gain a card");
+    	  if ((n != null) && (n.hasCardType(DomCardType.Victory))) {
+    		  owner.trash(owner.removeCardFromPlay(this));
+    	  }
+      } else {
+    	  DomCardName theCardToGain = owner.getDesiredCard(new DomCost(theSingleCards.size(), 0), false);
+    	  if (theCardToGain==null) {
+    		  //possibly null if played by Venture
+    		  theCardToGain=owner.getCurrentGame().getBestCardInSupplyFor(owner, null, new DomCost(theSingleCards.size(), 0));
+    	  }
+    	  if (theCardToGain==null) 
+    		  return;
+    	  owner.gain(theCardToGain);
+    	  if (theCardToGain.hasCardType(DomCardType.Victory))
+    		  owner.trash(owner.removeCardFromPlay(this));
       }
-      if (theCardToGain==null) 
-        return;
-      owner.gain(theCardToGain);
-      if (theCardToGain.hasCardType(DomCardType.Victory))
-        owner.trash(owner.removeCardFromPlay(this));
     }
     
     @Override

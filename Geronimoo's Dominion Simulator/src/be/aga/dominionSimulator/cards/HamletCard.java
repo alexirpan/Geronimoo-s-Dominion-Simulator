@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import be.aga.dominionSimulator.DomBuyRule;
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
 
@@ -22,41 +23,64 @@ public class HamletCard extends DomCard {
         owner.drawCards(1);
         ArrayList<DomCard> cardsInHand = owner.getCardsInHand();
         if (cardsInHand.isEmpty())
-      	  return;
-  	    Collections.sort(cardsInHand, SORT_FOR_DISCARD_FROM_HAND);
-  	    //fix for Menagerie which will often be played in combo with Hamlet
-        if (!owner.getCardsFromHand(DomCardName.Menagerie).isEmpty()){
-          processMenagerie();
-        }
-        //add an extra action if it's needed (multiple terminals in hand)
-        if (!discardedForAction && !owner.getCardsFromHand(DomCardType.Action).isEmpty()){
-        	if (owner.getProbableActionsLeft()<0){
+        	return;
+        if (owner instanceof DomHumanPlayer) {
+        	// +Action
+        	ArrayList<String> choices = new ArrayList<String>();
+        	choices.add("Discard for +Action");
+        	choices.add("Don't discard");
+        	String c = ((DomHumanPlayer) owner).chooseOption(choices, "Hamlet - discard for action?");
+        	if (c.startsWith("Discard")) {
+        		DomCard card = ((DomHumanPlayer) owner).chooseExactlyNCardsFromList(1, cardsInHand, "Hamlet - choose card to discard").get(0);
+        		discardForExtraAction(card);
+        		if (cardsInHand.isEmpty())
+        			return;
+        	}
+        	//+Buy
+        	choices = new ArrayList<String>();
+        	choices.add("Discard for +Buy");
+        	choices.add("Don't discard");
+        	c = ((DomHumanPlayer) owner).chooseOption(choices, "Hamlet - discard for buy?");
+        	if (c.startsWith("Discard")) {
+        		DomCard card = ((DomHumanPlayer) owner).chooseExactlyNCardsFromList(1, cardsInHand, "Hamlet - choose card to discard").get(0);
+        		discardForExtraBuy(card);
+        	}
+        } else {
+        	Collections.sort(cardsInHand, SORT_FOR_DISCARD_FROM_HAND);
+        	//fix for Menagerie which will often be played in combo with Hamlet
+        	if (!owner.getCardsFromHand(DomCardName.Menagerie).isEmpty()){
+        		processMenagerie();
+        	}
+        	//add an extra action if it's needed (multiple terminals in hand)
+        	if (!discardedForAction && !owner.getCardsFromHand(DomCardType.Action).isEmpty()){
+        		if (owner.getProbableActionsLeft()<0){
+        			discardForExtraAction(cardsInHand.get(0));
+        		}
+        	}
+        	//if we're going to draw a bunch of cards later in the turn, we want to make sure we have enough actions
+        	if (!owner.getCardsFromHand(DomCardType.Card_Advantage).isEmpty() && owner.getActionsLeft()==1 && !discardedForAction){
         		discardForExtraAction(cardsInHand.get(0));
         	}
+        	//fix for Library/Watchtower which will often be played in combo with Hamlet
+        	if (!owner.getCardsFromHand(DomCardName.Library).isEmpty() 
+        			|| !owner.getCardsFromHand(DomCardName.Watchtower).isEmpty()
+        			|| !owner.getCardsFromHand(DomCardName.Jack_of_all_Trades).isEmpty()){
+        		discardForLibraryAndWatchtower(cardsInHand);
+        	}
+
+        	//possibly discard for an extra buy if we have no actions in hand and no extra buys yet
+        	if (owner.getBuysLeft()<2 && owner.getCardsFromHand(DomCardType.Action).isEmpty()){
+        		processNoOtherActionsInHand(cardsInHand);
+        	}
+
+        	//in a Gardens strategy, try to get extra buys
+        	if (!discardedForBuy) {
+        		checkForGardens();	
+        	}
+
+        	//we might have Duchies, Provinces and others in hand that we have no use for, so just discard them
+        	discardGarbage(cardsInHand);
         }
-        //if we're going to draw a bunch of cards later in the turn, we want to make sure we have enough actions
-        if (!owner.getCardsFromHand(DomCardType.Card_Advantage).isEmpty() && owner.getActionsLeft()==1 && !discardedForAction){
-          discardForExtraAction(cardsInHand.get(0));
-        }
-  	    //fix for Library/Watchtower which will often be played in combo with Hamlet
-        if (!owner.getCardsFromHand(DomCardName.Library).isEmpty() 
-         || !owner.getCardsFromHand(DomCardName.Watchtower).isEmpty()
-         || !owner.getCardsFromHand(DomCardName.Jack_of_all_Trades).isEmpty()){
-    	  discardForLibraryAndWatchtower(cardsInHand);
-        }
-        
-        //possibly discard for an extra buy if we have no actions in hand and no extra buys yet
-        if (owner.getBuysLeft()<2 && owner.getCardsFromHand(DomCardType.Action).isEmpty()){
-          processNoOtherActionsInHand(cardsInHand);
-        }
-        
-        //in a Gardens strategy, try to get extra buys
-        if (!discardedForBuy) {
-          checkForGardens();	
-        }
-        
-        //we might have Duchies, Provinces and others in hand that we have no use for, so just discard them
-        discardGarbage(cardsInHand);
     }
 
 	private void checkForGardens() {

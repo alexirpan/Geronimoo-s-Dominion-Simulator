@@ -253,7 +253,14 @@ public class DomHumanPlayer extends DomPlayer {
 		}
 	}
 
-	public void gainCardUpToCost(DomCost domCost, String message) {
+	/**
+	 * Gains a card with cost less than or equal to the given cost
+	 * This method gains the card, and only returns the name of the card to make card implementation easier
+	 * @param domCost
+	 * @param message
+	 * @return the name of the card gained
+	 */
+	public DomCardName gainCardUpToCost(DomCost domCost, String message) {
 		ArrayList<DomCardName> possibleNames = playerInterface.gainableCardsUpToCost(domCost);
 		if (!possibleNames.isEmpty()) {
 			ArrayList<String> names = new ArrayList<String>();
@@ -268,7 +275,31 @@ public class DomHumanPlayer extends DomPlayer {
 				}
 			}
 			gain(cardName);
+			return cardName;
 		}
+		return null;
+	}
+	
+	public DomCardName gainCardUpToCost(DomCost domCost, DomCardType bannedType, String message) {
+		ArrayList<DomCardName> possibleNames = playerInterface.gainableCardsUpToCost(domCost);
+		if (!possibleNames.isEmpty()) {
+			ArrayList<String> names = new ArrayList<String>();
+			for (DomCardName n : possibleNames) {
+				if (!n.hasCardType(bannedType))
+					names.add(n.toString());
+			}
+			String choice = chooseOption(names, message);
+			DomCardName cardName = null;
+			for (DomCardName n : possibleNames) {
+				if (n.toString().equals(choice)) {
+					cardName = n;
+					break;
+				}
+			}
+			gain(cardName);
+			return cardName;
+		}
+		return null;
 	}
 
 	public DomCardName nameCard(String message) 
