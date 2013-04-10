@@ -1,6 +1,7 @@
 package be.aga.dominionSimulator.cards;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
@@ -17,7 +18,10 @@ public class MargraveCard extends DomCard {
     	if (thePlayer.checkDefense())
     		continue;
         thePlayer.drawCards( 1 );
-        thePlayer.doForcedDiscard(thePlayer.getCardsInHand().size()-3, false);
+        if (thePlayer instanceof DomHumanPlayer) {
+        	((DomHumanPlayer) thePlayer).doForcedDiscard(thePlayer.getCardsInHand().size()-3, false, "Margrave - discard down to 3 cards");
+        } else
+        	thePlayer.doForcedDiscard(thePlayer.getCardsInHand().size()-3, false);
       }
     }
     

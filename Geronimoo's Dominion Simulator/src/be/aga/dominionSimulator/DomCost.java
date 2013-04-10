@@ -45,20 +45,16 @@ public class DomCost implements Comparable< DomCost >{
     }
 
     /* (non-Javadoc)
+     * As written, $7 > $P and $P > $7. Be careful when checking if a cost is greater than another.
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     @Override
     public int compareTo( DomCost aO ) {
-    	// A non-potion card costs less than any other potion card
-        if (this.potions<aO.getPotions())
-           return -1;
-        if (this.potions > aO.getPotions())
-        	return 1;
-        if (this.coins < aO.getCoins())
-        	return -1;
-        if (this.coins > aO.getCoins())
-        	return 1;
-        return 0;
+    	if (this.coins == aO.getCoins() && this.potions == aO.getPotions())
+    		return 0;
+    	if (this.coins <= aO.getCoins() && this.potions <= aO.getPotions())
+    		return -1;
+    	return 1;
     }
 
     /**

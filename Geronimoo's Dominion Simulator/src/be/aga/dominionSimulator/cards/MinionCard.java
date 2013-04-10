@@ -3,6 +3,7 @@ package be.aga.dominionSimulator.cards;
 import be.aga.dominionSimulator.DomBuyRule;
 import be.aga.dominionSimulator.DomCard;
 import be.aga.dominionSimulator.DomCost;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
@@ -12,31 +13,40 @@ public class MinionCard extends DomCard {
     }
 
     public void play() {
-      if (!owner.getCardsFromHand( DomCardName.Minion ).isEmpty()) {
-        //if there are more Minions in hand, always play for +$2
-        playForMoney();
-        return;
-      }
-      DomCardName theDesiredCard = owner.getDesiredCard( owner.getTotalPotentialCurrency().add( new DomCost( 2, 0 ) ), false);
-      //go through owner's buy rules (from top) and if there's a card we want to buy, but can't now, get 4 new cards with Minion
-      //this can only work if every card in owner's buy rules has a treshold setting for number of Minions in the deck
-      for (DomBuyRule buyRule : owner.getBuyRules()){
-        if (owner.wants(buyRule.getCardToBuy()) && theDesiredCard != buyRule.getCardToBuy()) {
-       	 playForCards();
-         return;
-        }
-        if (theDesiredCard == buyRule.getCardToBuy()) {
-          break;
-        }
-      }
-      //if we can get in a free attack without it decreasing our buying potential this turn, do it
-      if (theDesiredCard == owner.getDesiredCard( new DomCost( owner.availableCoins, owner.availablePotions ), false)){
-        playForCards();
-        return;
-      }
-      //just play it for +$2
-      playForMoney();
-   }
+    	if (owner instanceof DomHumanPlayer) {
+    		String choice = ((DomHumanPlayer) owner).chooseOption("Minion - choose one", "+$2", "Discard and draw 4 cards");
+    		if (choice.startsWith("+")) {
+    			playForMoney();
+    		} else {
+    			playForCards();
+    		}
+    	} else {
+    		if (!owner.getCardsFromHand( DomCardName.Minion ).isEmpty()) {
+    			//if there are more Minions in hand, always play for +$2
+    			playForMoney();
+    			return;
+    		}
+    		DomCardName theDesiredCard = owner.getDesiredCard( owner.getTotalPotentialCurrency().add( new DomCost( 2, 0 ) ), false);
+    		//go through owner's buy rules (from top) and if there's a card we want to buy, but can't now, get 4 new cards with Minion
+    		//this can only work if every card in owner's buy rules has a treshold setting for number of Minions in the deck
+    		for (DomBuyRule buyRule : owner.getBuyRules()){
+    			if (owner.wants(buyRule.getCardToBuy()) && theDesiredCard != buyRule.getCardToBuy()) {
+    				playForCards();
+    				return;
+    			}
+    			if (theDesiredCard == buyRule.getCardToBuy()) {
+    				break;
+    			}
+    		}
+    		//if we can get in a free attack without it decreasing our buying potential this turn, do it
+    		if (theDesiredCard == owner.getDesiredCard( new DomCost( owner.availableCoins, owner.availablePotions ), false)){
+    			playForCards();
+    			return;
+    		}
+    		//just play it for +$2
+    		playForMoney();
+    	}
+    }
 
     private final void playForMoney() {
       owner.addActions( 1 );

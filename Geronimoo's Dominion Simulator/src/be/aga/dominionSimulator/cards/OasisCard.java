@@ -1,6 +1,7 @@
 package be.aga.dominionSimulator.cards;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 
 public class OasisCard extends DomCard {
@@ -12,6 +13,9 @@ public class OasisCard extends DomCard {
       owner.addActions(1);
       owner.addAvailableCoins(1);
       owner.drawCards(1);
-      owner.doForcedDiscard(1, false);
+      if (owner instanceof DomHumanPlayer) {
+    	  ((DomHumanPlayer) owner).doForcedDiscard(1, false, "Oasis - discard a card");
+      } else
+    	  owner.doForcedDiscard(1, false);
     }
 }

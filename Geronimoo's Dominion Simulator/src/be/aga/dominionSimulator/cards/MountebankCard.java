@@ -1,6 +1,7 @@
 package be.aga.dominionSimulator.cards;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
@@ -24,11 +25,20 @@ public class MountebankCard extends DomCard {
 
 	private boolean discardsCurse(DomPlayer thePlayer) {
 		if (thePlayer.getCardsFromHand(DomCardName.Curse).isEmpty())
-	       return false;
-		if (thePlayer.getCurrentGame().countInSupply(DomCardName.Curse)==0
-		  && !thePlayer.getCardsFromHand(DomCardType.Trasher).isEmpty())
 			return false;
-		thePlayer.discardFromHand(DomCardName.Curse);		
-		return true;
+		if (thePlayer instanceof DomHumanPlayer) {
+			String choice = ((DomHumanPlayer) thePlayer).chooseOption("Mountebank - discard Curse?", "Discard Curse", "Don't discard");
+			if (choice.startsWith("Discard")) {
+				thePlayer.discardFromHand(DomCardName.Curse);
+				return true;
+			}
+			return false;
+		} else {
+			if (thePlayer.getCurrentGame().countInSupply(DomCardName.Curse)==0
+					&& !thePlayer.getCardsFromHand(DomCardType.Trasher).isEmpty())
+				return false;
+			thePlayer.discardFromHand(DomCardName.Curse);		
+			return true;
+		}
 	}
 }

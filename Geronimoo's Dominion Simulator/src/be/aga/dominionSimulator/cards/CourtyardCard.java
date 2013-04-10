@@ -23,7 +23,7 @@ public class CourtyardCard extends DomCard {
     	}
     	if (owner instanceof DomHumanPlayer) {
     		DomCard topdeck = ((DomHumanPlayer) owner).chooseExactlyNCardsFromList(1, owner.getCardsInHand(), "Courtyard - topdeck a card").get(0);
-    		owner.putOnTopOfDeck(topdeck);
+    		owner.putOnTopOfDeck(owner.removeCardFromHand(topdeck));
     	} else {
     		Collections.sort(owner.getCardsInHand(), SORT_FOR_DISCARD_FROM_HAND);
     		DomCard theCardToReturn = null;

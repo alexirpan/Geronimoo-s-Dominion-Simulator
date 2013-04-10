@@ -3,6 +3,7 @@ package be.aga.dominionSimulator.cards;
 import java.util.ArrayList;
 
 import be.aga.dominionSimulator.DomCard;
+import be.aga.dominionSimulator.DomHumanPlayer;
 import be.aga.dominionSimulator.DomPlayer;
 import be.aga.dominionSimulator.enums.DomCardName;
 import be.aga.dominionSimulator.enums.DomCardType;
@@ -28,10 +29,22 @@ public class JesterCard extends DomCard {
           }
           if (owner.getCurrentGame().countInSupply(theCards.get(0).getName())==0)
         	continue;
-          if (theCards.get(0).getTrashPriority()<16) {
-            thePlayer.gain(theCards.get(0).getName());
+          if (owner instanceof DomHumanPlayer) {
+        	  DomCard theCard = theCards.get(0);
+        	  ArrayList<String> choices = new ArrayList<String>();
+        	  choices.add("Gain a copy");
+        	  choices.add(thePlayer + " gains a copy");
+        	  String choice = ((DomHumanPlayer) owner).chooseOption(choices, "Jester - revealed a " + theCard.getName().toString());
+        	  if (choice.startsWith("Gain"))
+        		  owner.gain(theCard.getName());
+        	  else
+        		  thePlayer.gain(theCard.getName());
           } else {
-            owner.gain(theCards.get(0).getName());
+        	  if (theCards.get(0).getTrashPriority()<16) {
+        		  thePlayer.gain(theCards.get(0).getName());
+        	  } else {
+        		  owner.gain(theCards.get(0).getName());
+        	  }
           }
       }
     }

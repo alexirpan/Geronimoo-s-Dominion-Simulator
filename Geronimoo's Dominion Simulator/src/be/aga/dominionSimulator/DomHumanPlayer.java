@@ -81,6 +81,28 @@ public class DomHumanPlayer extends DomPlayer {
 		return d.getSelectedOptions().get(0);
 	}
 	
+	public String chooseOption(String message, String ... options) {
+		ArrayList<String> optionsList = new ArrayList<String>();
+		for (String s : options) {
+			optionsList.add(s);
+		}
+		OptionSelectorDialog d = new OptionSelectorDialog(playerInterface, optionsList, message, 1, 1);
+		d.pack();
+		d.setVisible(true);
+		return d.getSelectedOptions().get(0);
+	}
+	
+	public ArrayList<String> chooseNChoices(int n, String message, String ... options) {
+		ArrayList<String> optionsList = new ArrayList<String>();
+		for (String s : options) {
+			optionsList.add(s);
+		}
+		OptionSelectorDialog d = new OptionSelectorDialog(playerInterface, optionsList, message, n, n);
+		d.pack();
+		d.setVisible(true);
+		return d.getSelectedOptions();
+	}
+	
 	public ArrayList<DomCard> chooseExactlyNCardsFromList(int n, ArrayList<DomCard> lst, String message) {
 		if (lst.size() < n) {
 			return chooseExactlyNCardsFromList(lst.size(), lst, message);
@@ -280,6 +302,28 @@ public class DomHumanPlayer extends DomPlayer {
 		return null;
 	}
 	
+	public DomCardName gainCardOfTypeUpToCost(DomCost domCost, DomCardType type, String message) {
+		ArrayList<DomCardName> possibleNames = playerInterface.gainableCardsUpToCost(domCost);
+		if (!possibleNames.isEmpty()) {
+			ArrayList<String> names = new ArrayList<String>();
+			for (DomCardName n : possibleNames) {
+				if (n.hasCardType(type))
+					names.add(n.toString());
+			}
+			String choice = chooseOption(names, message);
+			DomCardName cardName = null;
+			for (DomCardName n : possibleNames) {
+				if (n.toString().equals(choice)) {
+					cardName = n;
+					break;
+				}
+			}
+			gain(cardName);
+			return cardName;
+		}
+		return null;
+	}
+	
 	public DomCardName gainCardUpToCost(DomCost domCost, DomCardType bannedType, String message) {
 		ArrayList<DomCardName> possibleNames = playerInterface.gainableCardsUpToCost(domCost);
 		if (!possibleNames.isEmpty()) {
@@ -315,5 +359,12 @@ public class DomHumanPlayer extends DomPlayer {
 				return n;
 		}
 		return null;
+	}
+	
+	@Override
+	public DomCard chooseCardToPass() {
+		if (getCardsInHand().isEmpty())
+    		return null;
+        return chooseExactlyNCardsFromList(1, getCardsInHand(), "Choose card to pass").get(0);
 	}
 }
